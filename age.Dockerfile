@@ -1,3 +1,3 @@
-FROM localhost/base:latest
+FROM base:latest
 
 RUN pacman -Sy --noconfirm age
