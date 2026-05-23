@@ -14,6 +14,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
+    - uses: sigstore/cosign-installer@v4
+      with:
+        cosign-release: 'v3.0.6'
     - uses: actions/checkout@v6
     - name: Build base
       run: docker build . --file base.Dockerfile --tag base
@@ -30,5 +33,9 @@ jobs:
       run: docker push ${{ env.REGISTRY }}/${{ env.REPO }}/age
     - name: Push latex
       run: docker push ${{ env.REGISTRY }}/${{ env.REPO }}/latex
+    - name: Sign age
+      run: cosign sign --oidc --yes ${{ env.REGISTRY }}/${{ env.REPO }}/age
+    - name: Sign latex
+      run: cosign sign --oidc --yes ${{ env.REGISTRY }}/${{ env.REPO }}/latex
     
     
