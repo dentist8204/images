@@ -1,0 +1,15 @@
+name: Build
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build base
+      run: docker build . --file base.Dockerfile --tag base
+    - name: Build age
+      run: docker build . --file age.Dockerfile --tag age
+    - name: Build latex
+      run: docker build . --file latex.Dockerfile --tag latex
