@@ -32,8 +32,8 @@ jobs:
     - name: Push latex
       run: docker push ${{ env.REGISTRY }}/${{ env.REPO }}/latex
     - name: Sign age
-      run: cosign sign --oidc --yes ${{ env.REGISTRY }}/${{ env.REPO }}/age
+      run: cosign sign --yes ${{ env.REGISTRY }}/${{ env.REPO }}/age
     - name: Sign latex
-      run: cosign sign --oidc --yes ${{ env.REGISTRY }}/${{ env.REPO }}/latex
+      run: cosign sign --yes ${{ env.REGISTRY }}/${{ env.REPO }}/latex
     
     
