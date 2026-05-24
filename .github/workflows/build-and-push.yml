@@ -1,4 +1,4 @@
-name: Build
+name: Build and Push
 
 on: workflow_dispatch
 
@@ -27,7 +27,7 @@ jobs:
       with:
         context: .
         file: base.Dockerfile
-        tags: ${{ env.REGISTRY }}/${{ github.repository }}/base:latest
+        tags: ${{ env.REGISTRY }}/${{ github.repository }}/base
         push: true
     - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
       with:
@@ -57,7 +57,7 @@ jobs:
       with:
         context: .
         file: ${{ matrix.name }}.Dockerfile
-        tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}:latest
+        tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
         push: true
     - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
       with:
