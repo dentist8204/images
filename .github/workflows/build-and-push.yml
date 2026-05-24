@@ -27,13 +27,13 @@ jobs:
       with:
         context: .
         file: base.Dockerfile
-        tags: ${{ env.REGISTRY }}/${{ github.repository }}/base
+        tags: ${{ env.REGISTRY }}/${{ github.repository }}/base:latest
         push: true
     - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
       with:
         cosign-release: 'v3.0.6'
     - name: Sign image
-      run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}@${{ steps.build-and-push.outputs.digest }}
+      run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/base@${{ steps.build-and-push.outputs.digest }}
       
   derivatives:
     runs-on: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
       with:
         context: .
         file: ${{ matrix.name }}.Dockerfile
-        tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}
+        tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}:latest
         push: true
     - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
       with:
