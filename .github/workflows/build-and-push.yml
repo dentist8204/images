@@ -2,40 +2,52 @@ name: Build
 
 on: workflow_dispatch
 
-env:
-  REGISTRY: ghcr.io
-  REPO: ${{ github.repository }}
-
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      REGISTRY: ghcr.io
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    strategy:
+      matrix:
+        image:
+          - ${{ github.repository }}/age
+          - ${{ github.repository }}/latex
+        dockerfile:
+          - age.Dockerfile
+          - latex.Dockerfile
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-    - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
-      with:
-        cosign-release: 'v3.0.6'
     - name: Build base
       run: docker build . --file base.Dockerfile --tag base
-    - name: Build age
-      run: docker build . --file age.Dockerfile --tag ${{ env.REGISTRY }}/${{ env.REPO }}/age --pull=false
-    - name: Build latex
-      run: docker build . --file latex.Dockerfile --tag ${{ env.REGISTRY }}/${{ env.REPO }}/latex --pull=false
     - uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Push age
-      run: docker push ${{ env.REGISTRY }}/${{ env.REPO }}/age
-    - name: Push latex
-      run: docker push ${{ env.REGISTRY }}/${{ env.REPO }}/latex
-    - name: Sign age
-      run: cosign sign --yes ${{ env.REGISTRY }}/${{ env.REPO }}/age
-    - name: Sign latex
-      run: cosign sign --yes ${{ env.REGISTRY }}/${{ env.REPO }}/latex
+    - uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9
+      id: meta
+      with:
+        images: ${{ env.REGISTRY }}/${{ matrix.image }}
+    - uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
+      id: build-and-push
+      with:
+        context: .
+        file: ${{ matrix.dockerfile }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6
+      with:
+        cosign-release: 'v3.0.6'
+    - name: Sign image
+      env:
+        TAGS: ${{ steps.meta.outputs.tags }}
+        DIGEST: ${{ steps.build-and-push.outputs.digest }}
+      run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
     
     
