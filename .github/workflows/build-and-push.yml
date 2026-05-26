@@ -30,8 +30,8 @@ jobs:
         file: base.Dockerfile
         tags: ${{ env.REGISTRY }}/${{ github.repository }}/base:latest
         push: true
-        cache-from: type=registry,ref=${{ github.repository }}/base:latest
-        cache-to: type=inline
+        cache-from: type=registry,ref=${{ github.repository }}/base:cache
+        cache-to: type=registry,ref=${{ github.repository }}/base:cache,mode=max
         labels: |
           org.opencontainers.image.source=https://github.com/dentist8204/images
           org.opencontainers.image.licenses=MIT
@@ -65,8 +65,8 @@ jobs:
         file: ${{ matrix.name }}.Dockerfile
         tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.name }}:latest
         push: true
-        cache-from: type=registry,ref=${{ github.repository }}/${{ matrix.name }}:latest
-        cache-to: type=inline
+        cache-from: type=registry,ref=${{ github.repository }}/${{ matrix.name }}:cache
+        cache-to: type=registry,ref=${{ github.repository }}/${{ matrix.name }}:cache,mode=max
         labels: |
           org.opencontainers.image.source=https://github.com/dentist8204/images
           org.opencontainers.image.licenses=MIT
