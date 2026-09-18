@@ -69,7 +69,6 @@ jobs:
         labels: |
           org.opencontainers.image.source=https://github.com/dentist8204/images
           org.opencontainers.image.licenses=MIT
-
   independents:
     runs-on: ubuntu-latest
     strategy:
