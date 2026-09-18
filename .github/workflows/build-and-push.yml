@@ -36,7 +36,7 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         labels: |
-          org.opencontainers.image.source=https://github.com/dentist8204/images
+          org.opencontainers.image.source=https://github.com/dentist8204/images/base.Dockerfile
           org.opencontainers.image.licenses=MIT
           org.opencontainers.image.description=Arch image with an unprivileged user
   derivatives:
@@ -67,6 +67,30 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         labels: |
-          org.opencontainers.image.source=https://github.com/dentist8204/images
+          org.opencontainers.image.source=https://github.com/dentist8204/images/${{ matrix.name }}.Dockerfile
+          org.opencontainers.image.licenses=MIT
+  antlr:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+    - uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5
+      with:
+        version: v0.34.1
+    - uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
+      id: build-and-push
+      with:
+        context: .
+        file: antlr.Dockerfile
+        tags: ${{ env.REGISTRY }}/${{ github.repository }}/base:latest
+        push: true
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        labels: |
+          org.opencontainers.image.source=https://github.com/dentist8204/images/antlr.Dockerfile
           org.opencontainers.image.licenses=MIT
     
