@@ -7,6 +7,6 @@ ENV uid=1007
 RUN groupadd --gid ${uid} ${username}
 RUN useradd --uid ${uid} --gid ${uid} --create-home --shell /bin/bash ${username}
 
-RUN apt-get update && apt-get install -y --no-install-recommends antlr4 build-essential
+RUN apt-get update && apt-get install -y --no-install-recommends antlr4 build-essential cmake
 
 LABEL org.opencontainers.image.description="Ubuntu image with ANTLR"
