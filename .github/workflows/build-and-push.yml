@@ -38,5 +38,5 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         labels: |
-          org.opencontainers.image.source=https://github.com/dentist8204/images
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}
           org.opencontainers.image.licenses=MIT
