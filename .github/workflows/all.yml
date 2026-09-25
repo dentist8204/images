@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '39 12 * * *'
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   base:
     uses: ./.github/workflows/build-and-push.yml
