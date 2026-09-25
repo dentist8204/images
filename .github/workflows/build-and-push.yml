@@ -3,13 +3,13 @@ name: Build and Push
 on:
   workflow_dispatch:
     inputs:
-      container_name:
+      image_name:
         required: true
         type: choice
         options: ["age", "antlr", "base", "latex"]
   workflow_call:
     inputs:
-      container_name:
+      image_name:
         required: true
         type: string
 
@@ -37,8 +37,8 @@ jobs:
     - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
       id: build-and-push
       with:
-        file: ${{ inputs.container_name }}.Dockerfile
-        tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.container_name }}:latest
+        file: ${{ inputs.image_name }}.Dockerfile
+        tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}:latest
         push: true
         cache-from: type=gha
         cache-to: type=gha,mode=max
