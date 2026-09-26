@@ -3,7 +3,7 @@ name: All
 on:
   workflow_dispatch:
   schedule:
-    - cron: '39 12 * * *'
+    - cron: '24 23 * * *'
 
 permissions:
   contents: read
