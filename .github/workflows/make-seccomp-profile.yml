@@ -20,7 +20,7 @@ jobs:
     - run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends sysdig
-        CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest)
+        CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
         sudo sysdig -w syscalls.scap "container.id=$CONTAINER_ID" &
         SYSDIG_PID=$!
         docker start $CONTAINER_ID
