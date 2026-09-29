@@ -40,8 +40,8 @@ jobs:
               @pending[pid] = 1; 
             } 
 
-            tracepoint:syscalls:sys_exit_seccomp
-            /@pending[pid]/
+            tracepoint:syscalls:sys_enter_execve 
+            /@pending[pid]/ 
             { 
               @active[pid] = 1; 
             } 
