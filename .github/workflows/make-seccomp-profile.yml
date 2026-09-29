@@ -109,11 +109,15 @@ jobs:
   make-seccomp-profile:
     runs-on: ubuntu-latest
     needs: list-syscalls
+    permissions:
+      actions: read
+      contents: read
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
     - uses: actions/download-artifact@ad191675b41f6a5b46da9a048cb6893812da158b
       with:
         name: syscalls-${{ inputs.image_name }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
     - run: |
         cat <<EOF > seccomp-profile.json
         {
