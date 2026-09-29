@@ -17,4 +17,22 @@ jobs:
   make-seccomp-profile:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+    - run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends sysdig
+        CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest)
+        sudo sysdig -w syscalls.scap "container.id=$CONTAINER_ID" &
+        SYSDIG_PID=$!
+        docker start $CONTAINER_ID
+        sleep 20
+        sudo kill $SYSDIG_PID
+        sudo sysdig -r syscalls.scap 'evt.type=enter' -c a | awk '{print $1}' | sort -u > syscalls.txt
+        echo '{"defaultAction":"SCMP_ACT_ERRNO","defaultErrno":"ENOSYS","architectures":["SCMP_ARCH_X86_64"],"syscalls":[{"action":"SCMP_ACT_ALLOW","names":[' > seccomp-profile.json
+        sed 's/.*/"&",/' syscalls.txt | sed '$ s/,$//' >> seccomp-profile.json
+        echo ']}]}' >> seccomp-profile.json
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: seccomp-profile-${{ inputs.image_name }}
+        path: seccomp-profile-${{ inputs.image_name }}.json
+      
+      
