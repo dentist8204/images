@@ -71,7 +71,7 @@ jobs:
         sleep 5
         CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
         docker start $CONTAINER_ID
-        timeout 5s docker wait $CONTAINER_ID
+        timeout 20s docker wait $CONTAINER_ID
         sudo kill $BPF_PID
     - run: |
         echo '{"defaultAction":"SCMP_ACT_ERRNO","defaultErrno":"ENOSYS","architectures":["SCMP_ARCH_X86_64"],"syscalls":[{"action":"SCMP_ACT_ALLOW","names":[' > seccomp-profile.json
