@@ -47,8 +47,8 @@ jobs:
             {
               @exec_attempt[tid] = 1;
               
-              delete(@pending, tid);
-              delete(@runtime_tree, tid);
+              delete(@pending[tid]);
+              delete(@runtime_tree[tid]);
             }
             
             tracepoint:syscalls:sys_exit_execve
@@ -57,7 +57,7 @@ jobs:
               if (args->ret == 0) {
                 @active_tree[tid] = 1;
                 
-                delete(@exec_attempt, tid);
+                delete(@exec_attempt[tid]);
               }
             }
 
@@ -80,16 +80,16 @@ jobs:
                 @[@current_id[tid] - 1] = 1; 
               } 
               
-              delete(@current_id, tid);
+              delete(@current_id[tid]);
             }
 
             tracepoint:sched:sched_process_exit
             {
-              delete(@runtime_tree, tid);
-              delete(@active_tree, tid);
-              delete(@pending, tid);
-              delete(@exec_attempt, tid);
-              delete(@current_id, tid);
+              delete(@runtime_tree[tid]);
+              delete(@active_tree[tid]);
+              delete(@pending[tid]);
+              delete(@exec_attempt[tid]);
+              delete(@current_id[tid]);
             }
           ' -o syscalls.txt &
         BPF_PID=$!
