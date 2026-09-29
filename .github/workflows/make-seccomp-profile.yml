@@ -64,6 +64,7 @@ jobs:
               if (args->ret > -1) { 
                 @[@current_id[pid]] = 1; 
               } 
+              
               delete(@current_id[pid]); 
             }
           ' -o syscalls.txt &
