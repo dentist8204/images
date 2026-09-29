@@ -22,11 +22,15 @@ jobs:
         sudo apt-get install -y --no-install-recommends auditd bpftrace
     - run: |
         sudo bpftrace -e '
-            tracepoint:syscalls:sys_enter_prctl 
+            tracepoint:syscalls:sys_enter_seccomp
             { 
-              printf("%d called %d\n", pid, args->option); 
-              @options[args->option] = count();
-              @active[pid] = 1;
+              @pending[pid] = 1; 
+            } 
+
+            tracepoint:syscalls:sys_exit_seccomp
+            /@pending[pid]/
+            { 
+              @active[pid] = 1; 
             } 
 
             tracepoint:sched:sched_process_fork 
