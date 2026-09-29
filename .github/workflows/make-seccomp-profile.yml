@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       actions: write
+      artifact-metadata: write
     steps:
     - run: |
         sudo apt-get update
@@ -111,7 +112,7 @@ jobs:
     needs: list-syscalls
     permissions:
       actions: write
-      artifact-metadata: read
+      artifact-metadata: write
       contents: read
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
