@@ -70,14 +70,14 @@ jobs:
             tracepoint:raw_syscalls:sys_enter 
             /@active_tree[tid]/ 
             { 
-              @current_id[tid] = args->id; 
+              @current_id[tid] = args->id + 1; 
             } 
 
             tracepoint:raw_syscalls:sys_exit 
-            /has_key(@current_id, tid)/ 
+            /@current_id[tid]/ 
             { 
               if (args->ret > -1) { 
-                @[@current_id[tid]] = 1; 
+                @[@current_id[tid] - 1] = 1; 
               } 
               
               delete(@current_id, tid);
