@@ -23,49 +23,73 @@ jobs:
     - run: |
         sudo bpftrace -e '
             tracepoint:syscalls:sys_enter_execve 
-            /str(args->filename) == "runc" || str(args->filename) == "/usr/bin/runc" || str(args->filename) == "/usr/local/bin/runc"/ 
+            /str(args->filename) == "runc" ||
+             str(args->filename) == "/usr/bin/runc" || 
+             str(args->filename) == "/usr/local/bin/runc"/ 
             { 
-              @runtime_tree[pid] = 1; 
+              @runtime_tree[tid] = 1; 
             } 
 
             tracepoint:sched:sched_process_fork 
-            /@runtime_tree[pid]/ 
+            /@runtime_tree[tid]/ 
             { 
               @runtime_tree[args->child_pid] = 1; 
             } 
             
             tracepoint:syscalls:sys_enter_seccomp
-            /@runtime_tree[pid]/ 
+            /@runtime_tree[tid]/ 
             { 
-              @pending[pid] = 1; 
+              @pending[tid] = 1; 
             } 
 
-            tracepoint:syscalls:sys_enter_execve 
-            /@pending[pid]/ 
-            { 
-              @active[pid] = 1; 
-            } 
+            tracepoint:syscalls:sys_enter_execve
+            /@pending[tid]/
+            {
+              @exec_attempt[tid] = 1;
+              
+              delete(@pending, tid);
+              delete(@runtime_tree, tid);
+            }
+            
+            tracepoint:syscalls:sys_exit_execve
+            /@exec_attempt[tid]/
+            {
+              if (args->ret == 0) {
+                @active_tree[tid] = 1;
+                
+                delete(@exec_attempt, tid);
+              }
+            }
 
             tracepoint:sched:sched_process_fork 
-            /@active[pid]/ 
+            /@active_tree[tid]/ 
             { 
-              @active[args->child_pid] = 1; 
+              @active_tree[args->child_pid] = 1; 
             } 
 
             tracepoint:raw_syscalls:sys_enter 
-            /@active[pid]/ 
+            /@active_tree[tid]/ 
             { 
-              @current_id[pid] = args->id; 
+              @current_id[tid] = args->id; 
             } 
 
             tracepoint:raw_syscalls:sys_exit 
-            /@active[pid]/ 
+            /has_key(@current_id, tid)/ 
             { 
               if (args->ret > -1) { 
-                @[@current_id[pid]] = 1; 
+                @[@current_id[tid]] = 1; 
               } 
               
-              delete(@current_id[pid]); 
+              delete(@current_id, tid);
+            }
+
+            tracepoint:sched:sched_process_exit
+            {
+              delete(@runtime_tree, tid);
+              delete(@active_tree, tid);
+              delete(@pending, tid);
+              delete(@exec_attempt, tid);
+              delete(@current_id, tid);
             }
           ' -o syscalls.txt &
         BPF_PID=$!
