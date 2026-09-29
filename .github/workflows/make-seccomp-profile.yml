@@ -100,9 +100,25 @@ jobs:
         timeout 20s docker wait $CONTAINER_ID
         sudo kill $BPF_PID
     - run: |
-        printf '{\n  "defaultAction": "SCMP_ACT_ERRNO",\n  "defaultErrno":"ENOSYS",\n  "architectures": [\n    "SCMP_ARCH_X86_64"\n  ],\n  "syscalls": [\n    {\n      "action": "SCMP_ACT_ALLOW",\n      "names": [\n' > seccomp-profile.json
+        cat <<EOF > seccomp-profile.json
+        {
+          "defaultAction": "SCMP_ACT_ERRNO",
+          "defaultErrno":"ENOSYS",
+          "architectures": [
+            "SCMP_ARCH_X86_64"
+          ],
+          "syscalls": [
+            {
+              "action": "SCMP_ACT_ALLOW",
+              "names": [
+        EOF
         sed -nE 's/.*@\[([0-9]+)\].*/\1/p' syscalls.txt | xargs -I {} sh -c "ausyscall {}" | sort | sed 's/^/        "/;s/$/",/' | sed '$ s/,$//' >> seccomp-profile.json
-        printf '      ]\n    }\n  ]\n}' >> seccomp-profile.json
+        cat <<EOF >> seccomp-profile.json
+              ]
+            }
+          ]
+        }
+        EOF
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: seccomp-data-${{ inputs.image_name }}
