@@ -13,13 +13,11 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: read
-
 jobs:
   list-syscalls:
     runs-on: ubuntu-latest
-    permissions: {}
+    permissions:
+      actions: write
     steps:
     - run: |
         sudo apt-get update
@@ -112,6 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: list-syscalls
     permissions:
+      actions: write
       contents: read
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
