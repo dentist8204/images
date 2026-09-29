@@ -19,19 +19,18 @@ jobs:
     steps:
     - run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends build-essential linux-headers-$(uname -r) sysdig
-        sudo sysdig-probe install
+        sudo apt-get install -y --no-install-recommends bpftrace
     - run: |
         CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
-        sudo sysdig -w syscalls.scap "container.id=$CONTAINER_ID" &
-        SYSDIG_PID=$!
+        CGROUP_ID=$(cat /sys/fs/cgroup/system.slice/docker-${CONTAINER_ID}.scope/cgroup.id)
+        sudo bpftrace -e 'tracepoint:raw_syscalls:sys_enter /cgroup == $1/ { @[probe("syscall_name")] = 1; }' $CGROUP_ID -o syscalls.txt &
+        BPF_PID=$!
         docker start $CONTAINER_ID
-        sleep 20
-        sudo kill $SYSDIG_PID
+        timeout 20s docker wait $CONTAINER_ID
+        sudo kill $BPF_PID
     - run: |
-        sudo sysdig -r syscalls.scap 'evt.type=enter' -c a | awk '{print $1}' | sort -u > syscalls.txt
         echo '{"defaultAction":"SCMP_ACT_ERRNO","defaultErrno":"ENOSYS","architectures":["SCMP_ARCH_X86_64"],"syscalls":[{"action":"SCMP_ACT_ALLOW","names":[' > seccomp-profile.json
-        sed 's/.*/"&",/' syscalls.txt | sed '$ s/,$//' >> seccomp-profile.json
+        sed -E 's/.*\[([^\]]+)\].*/"\1",/' syscalls.txt | sed '$ s/,$//' >> seccomp-profile.json
         echo ']}]}' >> seccomp-profile.json
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
