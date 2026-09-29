@@ -61,7 +61,7 @@ jobs:
             tracepoint:raw_syscalls:sys_exit 
             /@active[pid]/ 
             { 
-              if (args->ret != -1 && args->ret != -38) { 
+              if (args->ret > -1) { 
                 @[@current_id[pid]] = 1; 
               } 
               delete(@current_id[pid]); 
