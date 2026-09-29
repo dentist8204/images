@@ -120,7 +120,6 @@ jobs:
     - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
         name: syscalls-${{ inputs.image_name }}
-        github-token: ${{ secrets.GITHUB_TOKEN }}
     - run: |
         cat <<EOF > seccomp-profile.json
         {
