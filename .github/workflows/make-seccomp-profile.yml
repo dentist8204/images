@@ -25,14 +25,7 @@ jobs:
             tracepoint:syscalls:sys_enter_prctl 
             /args->option == 22/ 
             { 
-              @pending[pid] = 1; 
-            } 
-
-            tracepoint:syscalls:sys_exit_prctl 
-            /@pending[pid]/ 
-            { 
               @active[pid] = 1; 
-              delete(@pending[pid]); 
             } 
 
             tracepoint:sched:sched_process_fork 
