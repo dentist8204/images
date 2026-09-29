@@ -24,7 +24,9 @@ jobs:
         sudo bpftrace -e '
             tracepoint:syscalls:sys_enter_prctl 
             { 
-              @active[pid] = 1; 
+              printf("%d called %d\n", pid, args->option); 
+              @options[args->option] = count();
+              @active[pid] = 1;
             } 
 
             tracepoint:sched:sched_process_fork 
