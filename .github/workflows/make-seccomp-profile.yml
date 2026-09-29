@@ -19,7 +19,7 @@ jobs:
     steps:
     - run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends bpftrace
+        sudo apt-get install -y --no-install-recommends auditd bpftrace
     - run: |
         sudo bpftrace -e '
             tracepoint:syscalls:sys_enter_prctl 
@@ -38,7 +38,7 @@ jobs:
             tracepoint:raw_syscalls:sys_enter 
             /@active[pid]/ 
             { 
-              @[probe("syscall_name")] = 1; 
+              @[args->id] = 1; 
             }
           ' -o syscalls.txt &
         BPF_PID=$!
@@ -49,7 +49,7 @@ jobs:
         sudo kill $BPF_PID
     - run: |
         echo '{"defaultAction":"SCMP_ACT_ERRNO","defaultErrno":"ENOSYS","architectures":["SCMP_ARCH_X86_64"],"syscalls":[{"action":"SCMP_ACT_ALLOW","names":[' > seccomp-profile.json
-        sed -E 's/.*\[([^\]]+)\].*/"\1",/' syscalls.txt | sed '$ s/,$//' >> seccomp-profile.json
+        sed -nE 's/.*\[([0-9]+)\].*/\1/p' syscalls.txt | xargs -I {} sh -c "ausyscall {}" | sed 's/^/"/;s/$/",/' | sed '$ s/,$//' >> seccomp-profile.json
         echo ']}]}' >> seccomp-profile.json
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
