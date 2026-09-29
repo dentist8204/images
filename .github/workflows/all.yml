@@ -5,17 +5,19 @@ on:
   schedule:
     - cron: '47 7 * * *'
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
   base:
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: "base"
   derivatives:
     needs: base
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         image_name:
@@ -25,6 +27,9 @@ jobs:
     with:
       image_name: ${{ matrix.image_name }}
   antlr:
+    permissions:
+      contents: read
+      packages: write
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: "antlr"
