@@ -93,6 +93,7 @@ jobs:
               delete(@current_id[tid]);
             }
           ' -o syscalls.txt &
+        
         BPF_PID=$!
         sleep 5
         CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
@@ -112,7 +113,10 @@ jobs:
               "action": "SCMP_ACT_ALLOW",
               "names": [
         EOF
-        sed -nE 's/.*@\[([0-9]+)\].*/\1/p' syscalls.txt | xargs -I {} sh -c "ausyscall {}" | sort | sed 's/^/        "/;s/$/",/' | sed '$ s/,$//' >> seccomp-profile.json
+        
+        sed -nE 's/.*@\[([0-9]+)\].*/\1/p' syscalls.txt | xargs -I {} sh -c "ausyscall {}" | sort |
+        sed 's/^/        "/;s/$/",/' |  sed '$ s/,$//' >> seccomp-profile.json
+        
         cat <<EOF >> seccomp-profile.json
               ]
             }
