@@ -21,7 +21,7 @@ jobs:
     steps:
     - run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends auditd bpftrace
+        sudo apt-get install -y --no-install-recommends bpftrace
     - run: |
         sudo bpftrace -e '
             tracepoint:syscalls:sys_enter_execve 
@@ -113,6 +113,9 @@ jobs:
       actions: read
       contents: read
     steps:
+    - run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends auditd
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
     - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
