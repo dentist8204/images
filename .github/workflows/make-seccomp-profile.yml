@@ -19,13 +19,16 @@ jobs:
     steps:
     - run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends sysdig
+        sudo apt-get install -y --no-install-recommends build-essential linux-headers-$(uname -r) sysdig
+        sudo sysdig-probe install
+    - run: |
         CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
         sudo sysdig -w syscalls.scap "container.id=$CONTAINER_ID" &
         SYSDIG_PID=$!
         docker start $CONTAINER_ID
         sleep 20
         sudo kill $SYSDIG_PID
+    - run: |
         sudo sysdig -r syscalls.scap 'evt.type=enter' -c a | awk '{print $1}' | sort -u > syscalls.txt
         echo '{"defaultAction":"SCMP_ACT_ERRNO","defaultErrno":"ENOSYS","architectures":["SCMP_ARCH_X86_64"],"syscalls":[{"action":"SCMP_ACT_ALLOW","names":[' > seccomp-profile.json
         sed 's/.*/"&",/' syscalls.txt | sed '$ s/,$//' >> seccomp-profile.json
