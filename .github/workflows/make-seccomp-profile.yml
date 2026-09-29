@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: list-syscalls
     permissions:
-      actions: read
+      actions: write
       contents: read
     steps:
     - run: |
