@@ -22,7 +22,20 @@ jobs:
         sudo apt-get install -y --no-install-recommends auditd bpftrace
     - run: |
         sudo bpftrace -e '
+            tracepoint:syscalls:sys_enter_execve 
+            /str(args->filename) == "docker" || str(args->filename) == "/usr/bin/docker"/ 
+            { 
+              @docker_tree[pid] = 1; 
+            } 
+
+            tracepoint:sched:sched_process_fork 
+            /@docker_tree[pid]/ 
+            { 
+              @docker_tree[args->child_pid] = 1; 
+            } 
+            
             tracepoint:syscalls:sys_enter_seccomp
+            /@docker_tree[pid]/ 
             { 
               @pending[pid] = 1; 
             } 
@@ -62,15 +75,11 @@ jobs:
         sudo kill $BPF_PID
     - run: |
         echo '{"defaultAction":"SCMP_ACT_ERRNO","defaultErrno":"ENOSYS","architectures":["SCMP_ARCH_X86_64"],"syscalls":[{"action":"SCMP_ACT_ALLOW","names":[' > seccomp-profile-${{ inputs.image_name }}.json
-        sed -nE 's/.*\[([0-9]+)\].*/\1/p' syscalls.txt | xargs -I {} sh -c "ausyscall {}" | sed 's/^/"/;s/$/",/' | sed '$ s/,$//' >> seccomp-profile-${{ inputs.image_name }}.json
+        sed -nE 's/.*@\[([0-9]+)\].*/\1/p' syscalls.txt | xargs -I {} sh -c "ausyscall {}" | sed 's/^/"/;s/$/",/' | sed '$ s/,$//' >> seccomp-profile-${{ inputs.image_name }}.json
         echo ']}]}' >> seccomp-profile-${{ inputs.image_name }}.json
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
-        name: seccomp-profile-${{ inputs.image_name }}
-        path: seccomp-profile-${{ inputs.image_name }}.json
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: syscalls
-        path: syscalls.txt
+        name: seccomp-data-${{ inputs.image_name }}
+        path: "{seccomp-profile.json, syscalls.txt}"
       
       
