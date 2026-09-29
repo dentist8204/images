@@ -22,7 +22,7 @@ jobs:
         sudo apt-get install -y --no-install-recommends bpftrace
     - run: |
         CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
-        CGROUP_ID=$(sudo cat /sys/fs/cgroup/docker/${CONTAINER_ID}/cgroup.id)
+        CGROUP_ID=$(sudo cat /sys/fs/cgroup/system.slice/docker-${CONTAINER_ID}.scope/cgroup.id)
         sudo bpftrace -e 'tracepoint:raw_syscalls:sys_enter /cgroup == $1/ { @[probe("syscall_name")] = 1; }' $CGROUP_ID -o syscalls.txt &
         BPF_PID=$!
         docker start $CONTAINER_ID
