@@ -26,19 +26,34 @@ jobs:
             /args->option == 22/ 
             { 
               @pending[pid] = 1; 
-            }
+            } 
 
             tracepoint:syscalls:sys_exit_prctl 
             /@pending[pid]/ 
             { 
               @active[pid] = 1; 
-              delete(@pending[pid]);
-            }
+              delete(@pending[pid]); 
+            } 
+
+            tracepoint:sched:sched_process_fork 
+            /@active[pid]/ 
+            { 
+              @active[args->child_pid] = 1; 
+            } 
 
             tracepoint:raw_syscalls:sys_enter 
             /@active[pid]/ 
             { 
-              @[args->id] = 1; 
+              @current_id[pid] = args->id; 
+            } 
+
+            tracepoint:raw_syscalls:sys_exit 
+            /@active[pid]/ 
+            { 
+              if (args->ret != -1 && args->ret != -38) { 
+                @[@current_id[pid]] = 1; 
+              } 
+              delete(@current_id[pid]); 
             }
           ' -o syscalls.txt &
         BPF_PID=$!
