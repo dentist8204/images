@@ -23,7 +23,6 @@ jobs:
     - run: |
         sudo bpftrace -e '
             tracepoint:syscalls:sys_enter_prctl 
-            /args->option == 22/ 
             { 
               @active[pid] = 1; 
             } 
