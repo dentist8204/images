@@ -41,15 +41,30 @@ jobs:
             tracepoint:syscalls:sys_enter_seccomp
             /@runtime_tree[tid]/ 
             { 
-              @pending[tid] = 1; 
+              @epoch[tid]++; 
             } 
 
+            tracepoint:raw_syscalls:sys_enter 
+            /@epoch[tid]/ 
+            { 
+              @current_id[tid] = args->id + 1; 
+            }
+
+            tracepoint:raw_syscalls:sys_exit 
+            /@current_id[tid]/ 
+            { 
+              if (args->ret > -1) { 
+                @[tid, @epoch[tid], @current_id[tid] - 1] = 1; 
+              } 
+              
+              delete(@current_id[tid]);
+            }
+
             tracepoint:syscalls:sys_enter_execve
-            /@pending[tid]/
+            /@epoch[tid]/
             {
               @exec_attempt[tid] = 1;
               
-              delete(@pending[tid]);
               delete(@runtime_tree[tid]);
             }
             
@@ -57,42 +72,42 @@ jobs:
             /@exec_attempt[tid]/
             {
               if (args->ret == 0) {
-                @active_tree[tid] = 1;
-                @[59] = 1;
+                @commit[tid] = @epoch[tid];
                 
                 delete(@exec_attempt[tid]);
+                delete(@epoch[tid]);
               }
             }
 
             tracepoint:sched:sched_process_fork 
-            /@active_tree[tid]/ 
+            /@commit[tid]/ 
             { 
-              @active_tree[args->child_pid] = 1; 
+              @commit[args->child_pid] = @commit[tid]; 
             } 
 
             tracepoint:raw_syscalls:sys_enter 
-            /@active_tree[tid]/ 
+            /@commit[tid]/ 
             { 
-              @current_id[tid] = args->id + 1; 
-            } 
+              @current_id_[tid] = args->id + 1; 
+            }
 
             tracepoint:raw_syscalls:sys_exit 
-            /@current_id[tid]/ 
+            /@current_id_[tid]/ 
             { 
               if (args->ret > -1) { 
-                @[@current_id[tid] - 1] = 1; 
+                @[tid, @commit[tid], @current_id_[tid] - 1] = 1; 
               } 
               
-              delete(@current_id[tid]);
+              delete(@current_id_[tid]);
             }
 
             tracepoint:sched:sched_process_exit
             {
               delete(@runtime_tree[tid]);
-              delete(@active_tree[tid]);
-              delete(@pending[tid]);
+              delete(@epoch[tid]);
               delete(@exec_attempt[tid]);
               delete(@current_id[tid]);
+              delete(@current_id_[tid]);
             }
           ' -o syscalls.txt &
         
