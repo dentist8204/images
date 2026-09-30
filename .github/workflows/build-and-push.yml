@@ -41,5 +41,5 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         labels: |
-          org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          org.opencontainers.image.source=https://github.com/${{ github.repository }}/blob/${{ github.sha }}/dockerfiles/${{ inputs.image_name }}
           org.opencontainers.image.licenses=MIT
