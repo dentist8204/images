@@ -25,11 +25,11 @@ jobs:
         sudo apt-get install -y --no-install-recommends bpftrace
     - run: |
         sudo bpftrace -e '
-          # in kernel/auditsc.c
+          # defined in kernel/auditsc.c
           kprobe:audit_seccomp
           { 
-            # if signr is SECCOMP_LOG_LOG, output the syscall
-            if (arg1 & (1 << 5)) {
+            # SECCOMP_RET_LOG defined in include/uapi/linux/seccomp.h
+            if (arg2 == 0x7ffc0000U) {
               @[arg0] = 1; 
             }
           }
