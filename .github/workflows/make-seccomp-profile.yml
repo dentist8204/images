@@ -24,8 +24,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends bpftrace
     - run: |
-        sudo bpftrace -l 'tracepoint:*'
-    
         sudo bpftrace -e '
           kprobe:audit_seccomp
           { 
