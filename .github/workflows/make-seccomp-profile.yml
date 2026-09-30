@@ -111,7 +111,6 @@ jobs:
     needs: list-syscalls
     permissions:
       actions: write
-      contents: read
     steps:
     - run: |
         sudo apt-get update
