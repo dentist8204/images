@@ -1,1 +1,28 @@
-
+{
+  "age": [
+    [
+      "age",
+      "-e",
+      "-i",
+      "/home/inner-user/.age/key.txt",
+      "-o",
+      "/home/inner-user/entry/output.age",
+      "/home/inner-user/entry/input.txt"
+    ],
+    [
+      "age",
+      "-d",
+      "-i",
+      "/home/inner-user/.age/key.txt",
+      "-o",
+      "/home/inner-user/entry/output.txt",
+      "/home/inner-user/entry/output.age"
+    ]
+  ],
+  "antlr": [
+    
+  ],
+  "latex": [
+    
+  ],
+}
