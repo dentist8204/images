@@ -27,13 +27,10 @@ jobs:
         sudo bpftrace -l 'tracepoint:*'
     
         sudo bpftrace -e '
-          kprobe:audit_log_start /arg2 == 1326/ { 
-            $ctx = (struct audit_context *)arg0;
-
-            printf("ptr: %p | major: %d | ret: %d\n", $ctx, $ctx->major, $ctx->return_code);
-            
-            if ($ctx->return_code == 0) {
-              @[$ctx->major] = 1; 
+          kprobe:audit_seccomp
+          { 
+            if (arg1 & (1 << 5)) {
+              @[arg0] = 1; 
             }
           }
         ' -o syscalls.txt &
