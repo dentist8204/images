@@ -24,7 +24,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends bpftrace
     - run: |
-        sudo bpftrace -l 'tracepoint:*' | grep
+        sudo bpftrace -l 'tracepoint:*'
     
         sudo bpftrace -e '
           kprobe:audit_log_start /arg2 == 1326/ { 
