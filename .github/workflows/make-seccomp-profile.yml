@@ -25,92 +25,14 @@ jobs:
         sudo apt-get install -y --no-install-recommends bpftrace
     - run: |
         sudo bpftrace -e '
-            tracepoint:syscalls:sys_enter_execve 
-            /str(args->filename) == "runc" ||
-             str(args->filename) == "/usr/bin/runc" || 
-             str(args->filename) == "/usr/local/bin/runc"/ 
-            { 
-              @runtime_tree[tid] = 1; 
-            } 
-
-            tracepoint:sched:sched_process_fork 
-            /@runtime_tree[tid]/ 
-            { 
-              @runtime_tree[args->child_pid] = 1; 
-            } 
+          kprobe:audit_log_start /arg2 == 1326/ { 
+            $ctx = (struct audit_context *)arg0;
             
-            tracepoint:syscalls:sys_enter_seccomp
-            /@runtime_tree[tid]/ 
-            { 
-              @epoch[tid]++; 
-            } 
-
-            tracepoint:raw_syscalls:sys_enter 
-            /@epoch[tid]/ 
-            { 
-              @current_id[tid] = args->id + 1; 
+            if ($ctx->return_code == 0) {
+              @[$ctx->major] = 1; 
             }
-
-            tracepoint:raw_syscalls:sys_exit 
-            /@current_id[tid]/ 
-            { 
-              if (args->ret > -1) { 
-                @[tid, @epoch[tid], @current_id[tid] - 1] = 1; 
-              } 
-              
-              delete(@current_id[tid]);
-            }
-
-            tracepoint:syscalls:sys_enter_execve
-            /@epoch[tid]/
-            {
-              @exec_attempt[tid] = 1;
-              
-              delete(@runtime_tree[tid]);
-            }
-            
-            tracepoint:syscalls:sys_exit_execve
-            /@exec_attempt[tid]/
-            {
-              if (args->ret == 0) {
-                @commit[tid] = @epoch[tid];
-                
-                delete(@exec_attempt[tid]);
-                delete(@epoch[tid]);
-              }
-            }
-
-            tracepoint:sched:sched_process_fork 
-            /@commit[tid]/ 
-            { 
-              @commit[args->child_pid] = @commit[tid]; 
-            } 
-
-            tracepoint:raw_syscalls:sys_enter 
-            /@commit[tid]/ 
-            { 
-              @current_id_[tid] = args->id + 1; 
-            }
-
-            tracepoint:raw_syscalls:sys_exit 
-            /@current_id_[tid]/ 
-            { 
-              if (args->ret > -1) { 
-                @[tid, @commit[tid], @current_id_[tid] - 1] = 1; 
-              } 
-              
-              delete(@current_id_[tid]);
-            }
-
-            tracepoint:sched:sched_process_exit
-            {
-              delete(@runtime_tree[tid]);
-              delete(@epoch[tid]);
-              delete(@exec_attempt[tid]);
-              delete(@current_id[tid]);
-              delete(@current_id_[tid]);
-            }
-          ' -o syscalls.txt &
+          }
+        ' -o syscalls.txt &
         
         BPF_PID=$!
         sleep 5
