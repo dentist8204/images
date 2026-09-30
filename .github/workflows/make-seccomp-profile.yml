@@ -23,7 +23,7 @@ jobs:
     - run: |
         set -euo pipefail
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends auditd bpftrace
+        sudo apt-get install -y --no-install-recommends auditd bpftrace crun
     - run: |
         set -euo pipefail
         sudo bpftrace -e '
@@ -39,7 +39,7 @@ jobs:
         
         BPF_PID=$!
         sleep 5
-        CONTAINER_ID=$(docker create --security-opt=seccomp=config/default-docker-log-seccomp.json ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
+        CONTAINER_ID=$(docker create --runtime=crun --security-opt=seccomp=config/default-docker-log-seccomp.json ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
         docker start $CONTAINER_ID
         timeout 20s docker wait $CONTAINER_ID
         sudo kill $BPF_PID
