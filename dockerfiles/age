@@ -1,4 +1,4 @@
-FROM ghcr.io/dentist8204/images/base:latest
+FROM localhost/base
 
 RUN pacman -Sy --noconfirm age
 
