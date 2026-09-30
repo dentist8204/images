@@ -1,1 +1,14 @@
-
+[
+  {
+    "syscall": "clone",
+    "replacement-args": [
+      [
+        {
+          "index": 0,
+          "value": 2114060288,
+          "op": "SCMP_CMP_MASKED_EQ"
+        }
+      ]
+    ]
+  }
+]
