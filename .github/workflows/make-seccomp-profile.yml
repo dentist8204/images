@@ -19,6 +19,7 @@ jobs:
     permissions:
       actions: write
     steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
     - run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends bpftrace
@@ -113,27 +114,10 @@ jobs:
         
         BPF_PID=$!
         sleep 5
-        CONTAINER_ID=$(docker create ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
+        CONTAINER_ID=$(docker create --security-opt=seccomp=config/default-docker-log-seccomp.json ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
         docker start $CONTAINER_ID
         timeout 20s docker wait $CONTAINER_ID
         sudo kill $BPF_PID
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: syscalls-${{ inputs.image_name }}
-        path: syscalls.txt
-  make-seccomp-profile:
-    runs-on: ubuntu-latest
-    needs: list-syscalls
-    permissions:
-      actions: write
-    steps:
-    - run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends auditd
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      with:
-        name: syscalls-${{ inputs.image_name }}
     - run: |
         cat <<EOF > seccomp-profile.json
         {
@@ -159,7 +143,9 @@ jobs:
         EOF
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
-        name: seccomp-profile-${{ inputs.image_name }}
-        path: seccomp-profile.json
+        name: seccomp-${{ inputs.image_name }}
+        path: |
+          syscalls.txt
+          seccomp-profile.json
       
       
