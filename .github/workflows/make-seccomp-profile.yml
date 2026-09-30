@@ -25,8 +25,10 @@ jobs:
         sudo apt-get install -y --no-install-recommends bpftrace
     - run: |
         sudo bpftrace -e '
+          # in kernel/auditsc.c
           kprobe:audit_seccomp
           { 
+            # if signr is SECCOMP_LOG_LOG, output the syscall
             if (arg1 & (1 << 5)) {
               @[arg0] = 1; 
             }
