@@ -47,7 +47,7 @@ for id, errnoRet in blocked_ids:
   seccomp_profile["syscalls"].append({
     "names": [name],
     "action": "SCMP_ACT_ERRNO",
-    "errnoRet": errnoRet,
+    "errnoRet": int(errnoRet),
     "comment": "disallow because it returned the errno while being logged"
   })
 
