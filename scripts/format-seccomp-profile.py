@@ -22,27 +22,19 @@ with open("config/seccomp-replacements.json", "r", encoding="utf-8") as replacem
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   input = input_file.read()
 
-
-print("INPUT ============= START")
-print(input)
-print("INPUT ============= END")
-
 ids = re.findall(r"@\[(\d+)\]", input)
-
-print("IDS =============")
-print(ids)
 
 for id in ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
 
   name = result.stdout.strip()
-
-  print(name)
   
   if name in replacements:
     seccomp_profile["syscalls"].extend(replacements[name])
   else:
     seccomp_profile["syscalls"][0]["names"].append(name)
+
+seccomp_profile["syscalls"][0]["names"].sort()
 
 with open("seccomp-profile.json", "w", encoding="utf-8") as output_file:
   json.dump(seccomp_profile, output_file, indent=2)
