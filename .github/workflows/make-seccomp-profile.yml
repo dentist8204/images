@@ -33,11 +33,14 @@ jobs:
         sudo useradd --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
         echo "${{ env.USERNAME }}:100000:65536" | sudo tee /etc/subuid
         echo "${{ env.USERNAME }}:100000:65536" | sudo tee /etc/subgid
-        sudo cp -r environments /home/temp-user
-        sudo chown -R temp-user:temp-user /home/temp-user/environments
-        sudo cp -r config /home/temp-user
-        sudo chown -R temp-user:temp-user /home/temp-user/config
-        python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }}
+        sudo cp -r environments /home/${{ env.USERNAME }}
+        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/environments
+        sudo cp -r config /home/${{ env.USERNAME }}
+        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/config
+        sudo mkdir -p /run/user/${{ env.UID }}
+        sudo chown ${{ env.USERNAME }}:${{ env.USERNAME }} /run/user/${{ env.UID }}
+        sudo chmod 700 /run/user/${{ env.UID }}
+        python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }}
         python3 scripts/format-seccomp-profile.py
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
