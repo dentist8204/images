@@ -1,8 +1,23 @@
 /* defined in kernel/auditsc.c */
-kprobe:audit_seccomp /* (syscall, signr, code) */
+kprobe:audit_seccomp
 {
   /* SECCOMP_RET_LOG defined in include/uapi/linux/seccomp.h */
   if (arg2 == 0x7ffc0000) {
-    @[arg0] = 1;
+    @logged[tid] = arg0 + 1;
   }
+}
+
+tracepoint:syscalls:sys_exit
+/@logged[tid]/
+{
+  if (args->ret == 0) {
+    @[@logged[tid] - 1] = 1;
+  }
+  
+  delete(@logged[tid]);
+}
+
+tracepoint:sched:sched_process_exit
+{
+  delete(@logged[tid]);
 }
