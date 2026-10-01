@@ -74,7 +74,7 @@
         "ioctl"
       ],
       "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 38,
+      "errnoRet": 1,
       "comment": "disallow to cause failure"
     }
   ]
