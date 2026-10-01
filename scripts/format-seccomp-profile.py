@@ -39,7 +39,7 @@ for id in allowed_ids:
 
 seccomp_profile["syscalls"][0]["names"].sort()
 
-for id, errnoRet in blocked_id:
+for id, errnoRet in blocked_ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
 
   name = result.stdout.strip()
