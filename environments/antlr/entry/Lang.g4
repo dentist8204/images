@@ -3,7 +3,7 @@ grammar Lang;
 @header {package hello;}
 
 // Parser
-lang_program : PRORGAM EOF;
+lang_program : PROGRAM EOF;
 
 // Lexer
 PROGRAM : 'hello';
