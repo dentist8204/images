@@ -184,6 +184,7 @@
 				"inotify_init1",
 				"inotify_rm_watch",
 				"io_cancel",
+				"ioctl",
 				"io_destroy",
 				"io_getevents",
 				"io_pgetevents",
