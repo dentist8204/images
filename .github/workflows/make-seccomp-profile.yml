@@ -15,6 +15,8 @@ on:
         
 env:
   REGISTRY: ghcr.io
+  USERNAME: temp-user
+  UID: 1008
 
 jobs:
   make-seccomp-profile:
@@ -27,7 +29,16 @@ jobs:
         set -euo pipefail
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman python3
-        python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }}
+        sudo groupadd --gid ${{ env.UID }} ${{ env.USERNAME }}
+        sudo useradd --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
+        echo "${{ env.USERNAME }}:100000:65536" | sudo tee /etc/subuid
+        echo "${{ env.USERNAME }}:100000:65536" | sudo tee /etc/subgid
+        sudo cp -r environments /home/${{ env.USERNAME }}
+        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/environments
+        sudo cp -r config /home/${{ env.USERNAME }}
+        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/config
+        sudo loginctl enable-linger temp-user
+        python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }}
         python3 scripts/format-seccomp-profile.py
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
