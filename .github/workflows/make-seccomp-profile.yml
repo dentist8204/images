@@ -12,6 +12,8 @@ on:
       image_name:
         required: true
         type: string
+env:
+  REGISTRY: ghcr.io
 
 jobs:
   list-syscalls:
@@ -23,26 +25,10 @@ jobs:
     - run: |
         set -euo pipefail
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman
+        sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman python3
     - run: |
         set -euo pipefail
-        sudo bpftrace -e '
-          /* defined in kernel/auditsc.c */
-          kprobe:audit_seccomp
-          { 
-            /* SECCOMP_RET_LOG defined in include/uapi/linux/seccomp.h */
-            if (arg2 == 0x7ffc0000) {
-              @[arg0] = 1; 
-            }
-          }
-        ' -o syscalls.txt &
-        
-        BPF_PID=$!
-        sleep 5
-        CONTAINER_ID=$(podman create --runtime=crun --security-opt=seccomp=config/default-docker-log-seccomp.json ghcr.io/${{ github.repository }}/${{ inputs.image_name }}:latest uname -a)
-        podman start $CONTAINER_ID
-        timeout 20s podman wait $CONTAINER_ID
-        sudo kill $BPF_PID
+        python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }}
     - run: |
         set -euo pipefail
         cat <<EOF > seccomp-profile.json
