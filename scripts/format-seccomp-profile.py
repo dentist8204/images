@@ -23,7 +23,7 @@ ids = []
 
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   for line in input_file:
-    match = re.search(r"^@\[(\d+)\]", line)
+    match = re.search(r"@\[(\d+)\]", line)
 
     if match:
       ids.append(match.group(1))
