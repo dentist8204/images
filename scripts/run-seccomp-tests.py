@@ -37,4 +37,4 @@ for test in seccomp_tests:
 
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
 
-sleep(5)
+time.sleep(5)
