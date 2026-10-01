@@ -14,14 +14,6 @@
         }
       ],
       "comment": "allow if not CLONE_NEWNS, CLONE_NEWCGROUP, CLONE_NEWUTS CLONE_NEWIPC, CLONE_NEWUSER, CLONE_NEWPID, CLONE_NEWNET (from include/uapi/linux/sched.h)"
-    },
-    {
-      "names": [
-        "clone3"
-      ],
-      "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 1,
-      "comment": "disallow to cause fallback to clone"
     }
   ],
   "socket" : [
