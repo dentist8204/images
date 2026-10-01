@@ -39,4 +39,4 @@ for id in ids:
     seccomp_profile["syscalls"][0]["names"].append(name)
 
 with open("seccomp-profile.json", "w", encoding="utf-8") as output_file:
-  json.dump(data, output_file, indent=2)
+  json.dump(seccomp_profile, output_file, indent=2)
