@@ -50,13 +50,13 @@ for test in seccomp_tests:
                   "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
                   f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
                   f"XDG_CACHE_HOME={user_home}/.cache",
-                  "podman", "start", container_id], cwd=f"{user_home}",, check=True)
+                  "podman", "start", container_id], cwd=f"{user_home}", check=True)
   subprocess.run(["sudo", "-u", f"{username}",
                   "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
                   f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
                   f"XDG_CACHE_HOME={user_home}/.cache",
                   "timeout", "20s",
-                  "podman", "wait", container_id], cwd=f"{user_home}",, check=True)
+                  "podman", "wait", container_id], cwd=f"{user_home}", check=True)
 
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
 
