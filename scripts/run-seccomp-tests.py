@@ -23,22 +23,23 @@ runtime_dir   = sys.argv[4]
 container_ids = []
 
 for test in seccomp_tests:
+  create_command = ["sudo", "-u", f"{username}",
+                    "env", f"XDG_RUNTIME_DIR={runtime_dir}",
+                    "podman", "create", "--runtime=crun", "--cap-drop=all",
+                    "--workdir=/home/inner-user/entry",
+                    f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
+                    f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
+                    f"{sys.argv[2]}/{image_name}:latest"]
+
+  
+  create_command.extend(test)
+  
   try:
-    create_command = ["sudo", "-u", f"{username}",
-                      "env", f"XDG_RUNTIME_DIR={runtime_dir}",
-                      "podman", "create", "--runtime=crun", "--cap-drop=all",
-                      "--workdir=/home/inner-user/entry",
-                      f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
-                      f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
-                      f"{sys.argv[2]}/{image_name}:latest"]
+    result = subprocess.run(create_command, capture_output=True, text=True, check=True)
   except subprocess.CalledProcessError as error:
     print(f"PODMAN ERROR: {error.stderr}")
     
     raise
-  
-  create_command.extend(test)
-  
-  result = subprocess.run(create_command, capture_output=True, text=True, check=True)
 
   container_id = result.stdout.strip()
 
