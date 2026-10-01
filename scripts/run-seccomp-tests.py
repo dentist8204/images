@@ -18,17 +18,10 @@ image_name = sys.argv[1]
 with open("config/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_file:
   seccomp_tests = json.load(seccomp_tests_file)[image_name]
 
-username      = sys.argv[3]
-user_home     = f"/home/{username}"
-runtime_dir   = sys.argv[4]
 container_ids = []
 
 for test in seccomp_tests:
-  create_command = ["sudo", "-u", f"{username}",
-                    "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
-                    f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
-                    f"XDG_CACHE_HOME={user_home}/.cache",
-                    "podman", "create", "--runtime=crun", "--cap-drop=all",
+  create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all",
                     "--workdir=/home/inner-user/entry",
                     f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
                     f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
@@ -37,26 +30,14 @@ for test in seccomp_tests:
   
   create_command.extend(test)
   
-  try:
-    result = subprocess.run(create_command, cwd=f"{user_home}", capture_output=True, text=True, check=True)
-  except subprocess.CalledProcessError as error:
-    print(f"PODMAN ERROR: {error.stderr}")
-    
-    raise
+
+  result = subprocess.run(create_command, capture_output=True, text=True, check=True)
 
   container_id = result.stdout.strip()
 
-  subprocess.run(["sudo", "-u", f"{username}",
-                  "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
-                  f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
-                  f"XDG_CACHE_HOME={user_home}/.cache",
-                  "podman", "start", container_id], cwd=f"{user_home}", check=True)
-  subprocess.run(["sudo", "-u", f"{username}",
-                  "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
-                  f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
-                  f"XDG_CACHE_HOME={user_home}/.cache",
-                  "timeout", "20s",
-                  "podman", "wait", container_id], cwd=f"{user_home}", check=True)
+  subprocess.run(["podman", "start", container_id], check=True)
+  subprocess.run(["timeout", "20s",
+                  "podman", "wait", container_id], check=True)
 
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
 
