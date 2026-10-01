@@ -19,16 +19,13 @@ seccomp_profile = {
 with open("config/seccomp-replacements.json", "r", encoding="utf-8") as replacements_file:
   replacements = json.load(replacements_file)
 
-ids = []
-
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
-  for line in input_file:
-    match = re.search(r"@\[(\d+)\]", line)
+  input = input_file.read()
 
-    if match:
-      print(line + match.group(1))
-      
-      ids.append(match.group(1))
+ids = re.findall(r"@\[(\d+)\]", input)
+
+print("IDS =============")
+print(ids)
 
 for id in ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
