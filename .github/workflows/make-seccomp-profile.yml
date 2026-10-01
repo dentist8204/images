@@ -16,7 +16,7 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  list-syscalls:
+  make-seccomp-profile:
     runs-on: ubuntu-latest
     permissions:
       actions: write
