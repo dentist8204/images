@@ -7,7 +7,7 @@ kprobe:audit_seccomp
   }
 }
 
-tracepoint:syscalls:sys_exit
+tracepoint:raw_syscalls:sys_exit
 /@logged[tid]/
 {
   if (args->ret > -1) {
