@@ -22,9 +22,12 @@ with open("config/seccomp-replacements.json", "r", encoding="utf-8") as replacem
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   input = input_file.read()
 
-ids = re.findall(r"@\[(\d+)\]", input)
+allowed_ids     = re.findall(r"@\[(\d+)\]", input)
+allowed_ids_set = set(allowed_ids)
+blocked_ids     = re.findall(r"@error\[(\d+)\]: (\d)", input)
+blocked_ids     = [id for id in blocked_ids if id[0] not in allowed_set]
 
-for id in ids:
+for id in allowed_ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
 
   name = result.stdout.strip()
@@ -35,6 +38,18 @@ for id in ids:
     seccomp_profile["syscalls"][0]["names"].append(name)
 
 seccomp_profile["syscalls"][0]["names"].sort()
+
+for id, errnoRet in blocked_id:
+  result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
+
+  name = result.stdout.strip()
+  
+  seccomp_profile["syscalls"].append({
+    "names": [name],
+    "action": "SCMP_ACT_ERRNO",
+    "errnoRet": errnoRet,
+    "comment": "disallow because it returned the errno while being logged"
+  })
 
 with open("seccomp-profile.json", "w", encoding="utf-8") as output_file:
   json.dump(seccomp_profile, output_file, indent=2)
