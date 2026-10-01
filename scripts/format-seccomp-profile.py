@@ -22,6 +22,11 @@ with open("config/seccomp-replacements.json", "r", encoding="utf-8") as replacem
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   input = input_file.read()
 
+
+print("INPUT ============= START")
+print(input)
+print("INPUT ============= END")
+
 ids = re.findall(r"@\[(\d+)\]", input)
 
 print("IDS =============")
