@@ -12,6 +12,7 @@ on:
       image_name:
         required: true
         type: string
+        
 env:
   REGISTRY: ghcr.io
   USERNAME: temp-user
