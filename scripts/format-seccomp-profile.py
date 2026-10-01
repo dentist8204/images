@@ -25,7 +25,7 @@ with open("syscalls.txt", "r", encoding="utf-8") as input_file:
 allowed_ids     = re.findall(r"@\[(\d+)\]", input)
 allowed_ids_set = set(allowed_ids)
 blocked_ids     = re.findall(r"@error\[(\d+)\]: (\d)", input)
-blocked_ids     = [id for id in blocked_ids if id[0] not in allowed_set]
+blocked_ids     = [id for id in blocked_ids if id[0] not in allowed_ids_set]
 
 for id in allowed_ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
