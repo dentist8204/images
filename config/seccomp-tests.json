@@ -23,6 +23,12 @@
     [
       "make",
       "all"
+    ],
+    [
+      "java",
+      "-jar",
+      "bin/target.jar",
+      "input.lang"
     ]
   ],
   "latex": [
