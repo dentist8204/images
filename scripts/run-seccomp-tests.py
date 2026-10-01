@@ -19,10 +19,13 @@ with open("config/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_f
   seccomp_tests = json.load(seccomp_tests_file)[image_name]
 
 username      = sys.argv[3]
+runtime_dir   = sys.argv[4]
 container_ids = []
 
 for test in seccomp_tests:
-  create_command = ["sudo", "-u", f"{username}", "podman", "create", "--runtime=crun", "--cap-drop=all",
+  create_command = ["sudo", "-u", f"{username}",
+                    "env", f"XDG_RUNTIME_DIR={runtime_dir}",
+                    "podman", "create", "--runtime=crun", "--cap-drop=all",
                     "--workdir=/home/inner-user/entry",
                     f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
                     f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
@@ -34,8 +37,10 @@ for test in seccomp_tests:
 
   container_id = result.stdout.strip()
 
-  subprocess.run(["sudo", "-u", f"{username}", "podman", "start", container_id], check=True)
-  subprocess.run(["sudo", "-u", f"{username}", "timeout", "20s", "podman", "wait", container_id], check=True)
+  subprocess.run(["sudo", "-u", f"{username}", "env", f"XDG_RUNTIME_DIR={runtime_dir}",
+                  "podman", "start", container_id], check=True)
+  subprocess.run(["sudo", "-u", f"{username}", "env", f"XDG_RUNTIME_DIR={runtime_dir}", "timeout", "20s",
+                  "podman", "wait", container_id], check=True)
 
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
 
