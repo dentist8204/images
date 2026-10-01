@@ -26,33 +26,8 @@ jobs:
         set -euo pipefail
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman python3
-    - run: |
-        set -euo pipefail
         python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }}
-    - run: |
-        set -euo pipefail
-        cat <<EOF > seccomp-profile.json
-        {
-          "defaultAction": "SCMP_ACT_ERRNO",
-          "defaultErrno":"ENOSYS",
-          "architectures": [
-            "SCMP_ARCH_X86_64"
-          ],
-          "syscalls": [
-            {
-              "action": "SCMP_ACT_ALLOW",
-              "names": [
-        EOF
-        
-        sed -nE 's/.*@\[([0-9]+)\].*/\1/p' syscalls.txt | xargs -I {} sh -c "ausyscall {}" | sort |
-        sed 's/^/        "/;s/$/",/' |  sed '$ s/,$//' >> seccomp-profile.json
-        
-        cat <<EOF >> seccomp-profile.json
-              ]
-            }
-          ]
-        }
-        EOF
+        python3 scripts/format-seccomp-profile.py
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: seccomp-${{ inputs.image_name }}
