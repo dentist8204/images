@@ -48,7 +48,7 @@ for id, errnoRet in blocked_ids:
     "names": [name],
     "action": "SCMP_ACT_ERRNO",
     "errnoRet": int(errnoRet),
-    "comment": "disallow because it returned the errno while being logged"
+    "comment": "disallow because it returned this errno while being logged"
   })
 
 with open("seccomp-profile.json", "w", encoding="utf-8") as output_file:
