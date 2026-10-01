@@ -6,7 +6,7 @@ on:
       image_name:
         required: true
         type: choice
-        options: ["age", "antlr", "base", "latex"]
+        options: ["age", "antlr", "latex"]
   workflow_call:
     inputs:
       image_name:
