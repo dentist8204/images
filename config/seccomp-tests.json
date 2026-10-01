@@ -28,7 +28,19 @@
       "java",
       "-jar",
       "bin/target.jar",
-      "input.lang"
+      "exit"
+    ],
+    [
+      "java",
+      "-jar",
+      "bin/target.jar",
+      "/home/runner"
+    ],
+    [
+      "java",
+      "-jar",
+      "bin/target.jar",
+      "out.txt"
     ]
   ],
   "latex": [
