@@ -68,7 +68,7 @@
       "comment": "allow AF_INET6"
     }
   ],
-  "ioctl" [
+  "ioctl": [
     {
       "names": [
         "ioctl"
