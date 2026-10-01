@@ -25,6 +25,8 @@ with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   for line in input_file:
     match = re.search(r"@\[(\d+)\]", line)
 
+    print(line + match.group(1))
+
     if match:
       ids.append(match.group(1))
 
@@ -32,6 +34,8 @@ for id in ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
 
   name = result.stdout.strip()
+
+  print(name)
   
   if name in replacements:
     seccomp_profile["syscalls"].extend(replacements[name])
