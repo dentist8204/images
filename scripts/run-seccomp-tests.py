@@ -24,7 +24,7 @@ container_ids = []
 
 for test in seccomp_tests:
   create_command = ["sudo", "-u", f"{username}",
-                    "env", f"XDG_RUNTIME_DIR={runtime_dir}",
+                    "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME=/home/{username}",
                     "podman", "create", "--runtime=crun", "--cap-drop=all",
                     "--workdir=/home/inner-user/entry",
                     f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
