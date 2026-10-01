@@ -4,7 +4,7 @@ kprobe:audit_seccomp
   /* SECCOMP_RET_LOG defined in include/uapi/linux/seccomp.h */
   if (arg2 == 0x7ffc0000) {
     /* exit and exit_group */
-    if (arg0 == 60 || arg0 == 248) {
+    if (arg0 == 60 || arg0 == 231) {
       @[arg0] = 1;
     } else {
       @logged[tid] = arg0 + 1;
