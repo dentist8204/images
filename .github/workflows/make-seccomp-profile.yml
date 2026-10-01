@@ -37,9 +37,7 @@ jobs:
         sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/environments
         sudo cp -r config /home/${{ env.USERNAME }}
         sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/config
-        sudo mkdir -p /run/user/${{ env.UID }}
-        sudo chown ${{ env.USERNAME }}:${{ env.USERNAME }} /run/user/${{ env.UID }}
-        sudo chmod 700 /run/user/${{ env.UID }}
+        sudo loginctl enable-linger temp-user
         python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }}
         python3 scripts/format-seccomp-profile.py
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
