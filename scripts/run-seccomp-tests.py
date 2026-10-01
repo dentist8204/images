@@ -18,11 +18,13 @@ with open("config/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_f
 container_ids = []
 
 for test in seccomp_tests:
-  result = subprocess.run(["podman", "create", "--runtime=crun", "--cap-drop=all",
-                           "--workdir=/home/inner-user/entry",
-                           "--security-opt=seccomp=config/default-docker-log-seccomp.json",
-                           f"{sys.argv[2]}/{sys.argv[1]}:latest"].extend(test),
-                          capture_output=True, text=True, check=True)
+  create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all",
+                    "--workdir=/home/inner-user/entry",
+                    "--security-opt=seccomp=config/default-docker-log-seccomp.json",
+                    f"{sys.argv[2]}/{sys.argv[1]}:latest"]
+  create_command.extend(test)
+  
+  result = subprocess.run(create_command, capture_output=True, text=True, check=True)
 
   container_id = result.stdout.strip()
 
