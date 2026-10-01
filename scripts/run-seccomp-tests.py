@@ -25,6 +25,7 @@ container_ids = []
 for test in seccomp_tests:
   create_command = ["sudo", "-u", f"{username}",
                     "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME=/home/{username}",
+                    f"XDG_CONFIG_HOME=/home/{username}/.config",
                     "podman", "create", "--runtime=crun", "--cap-drop=all",
                     "--workdir=/home/inner-user/entry",
                     f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
@@ -43,9 +44,14 @@ for test in seccomp_tests:
 
   container_id = result.stdout.strip()
 
-  subprocess.run(["sudo", "-u", f"{username}", "env", f"XDG_RUNTIME_DIR={runtime_dir}",
+  subprocess.run(["sudo", "-u", f"{username}",
+                  "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME=/home/{username}",
+                  f"XDG_CONFIG_HOME=/home/{username}/.config",
                   "podman", "start", container_id], check=True)
-  subprocess.run(["sudo", "-u", f"{username}", "env", f"XDG_RUNTIME_DIR={runtime_dir}", "timeout", "20s",
+  subprocess.run(["sudo", "-u", f"{username}",
+                  "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME=/home/{username}",
+                  f"XDG_CONFIG_HOME=/home/{username}/.config",
+                  "timeout", "20s",
                   "podman", "wait", container_id], check=True)
 
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
