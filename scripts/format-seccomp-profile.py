@@ -25,9 +25,9 @@ with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   for line in input_file:
     match = re.search(r"@\[(\d+)\]", line)
 
-    print(line + match.group(1))
-
     if match:
+      print(line + match.group(1))
+      
       ids.append(match.group(1))
 
 for id in ids:
