@@ -35,6 +35,8 @@ jobs:
         echo "${{ env.USERNAME }}:100000:65536" | sudo tee /etc/subgid
         sudo cp -r environments /home/temp-user
         sudo chown -R temp-user:temp-user /home/temp-user/environments
+        sudo cp -r config /home/temp-user
+        sudo chown -R temp-user:temp-user /home/temp-user/config
         python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }}
         python3 scripts/format-seccomp-profile.py
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
