@@ -12,8 +12,10 @@ if bpftrace_exit_code is not None and bpftrace_exit_code != 0:
 
 time.sleep(5)
 
+image_name = sys.argv[1]
+
 with open("config/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_file:
-  seccomp_tests = json.load(seccomp_tests_file)[sys.argv[1]]
+  seccomp_tests = json.load(seccomp_tests_file)[image_name]
 
 container_ids = []
 
@@ -21,7 +23,8 @@ for test in seccomp_tests:
   create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all",
                     "--workdir=/home/inner-user/entry",
                     "--security-opt=seccomp=config/default-docker-log-seccomp.json",
-                    f"{sys.argv[2]}/{sys.argv[1]}:latest"]
+                    f"--volume={os.path.abspath(f'environments/{image_name}')}:/home/inner-user",
+                    f"{sys.argv[2]}/{image_name}:latest"]
   create_command.extend(test)
   
   result = subprocess.run(create_command, capture_output=True, text=True, check=True)
