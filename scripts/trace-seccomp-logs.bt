@@ -10,7 +10,7 @@ kprobe:audit_seccomp
 tracepoint:syscalls:sys_exit
 /@logged[tid]/
 {
-  if (args->ret == 0) {
+  if (args->ret > -1) {
     @[@logged[tid] - 1] = 1;
   }
   
