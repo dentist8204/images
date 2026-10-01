@@ -28,8 +28,8 @@ jobs:
         set -euo pipefail
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman python3
-        groupadd --gid ${{ env.UID }} ${{ env.USERNAME }}
-        useradd --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
+        sudo groupadd --gid ${{ env.UID }} ${{ env.USERNAME }}
+        sudo useradd --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
         echo "${{ env.USERNAME }}:100000:65536" | sudo tee /etc/subuid
         echo "${{ env.USERNAME }}:100000:65536" | sudo tee /etc/subgid
         python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }}
