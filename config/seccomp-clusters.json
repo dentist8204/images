@@ -1,0 +1,30 @@
+[
+  {
+    "names": {
+      "write",
+      "writev"
+    },
+    "comment": "writing"
+  },
+  {
+    "names": {
+      "read",
+      "readv"
+    },
+    "comment": "reading"
+  },
+  {
+    "names": {
+      "pread",
+      "preadv"
+    },
+    "comment": "offset reading"
+  },
+  {
+    "names": {
+      "pwrite",
+      "pwritev"
+    },
+    "comment": "offset writing"
+  }
+]
