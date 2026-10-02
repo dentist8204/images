@@ -9,6 +9,9 @@ updates:
     groups:
       all-actions:
         patterns: [ "*" ]
+    ignore:
+      - dependency-name: "ubuntu"
+        versions: [">= 23.00"]
   - package-ecosystem: "docker"
     directories: 
       - "/dockerfiles/antlr"
