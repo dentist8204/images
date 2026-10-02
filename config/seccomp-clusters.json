@@ -1,26 +1,18 @@
 {
-  "read": [
-    "readv"
+  "clusters": [
+    [ "read", "readv" ],
+    [ "pread", "preadv" ],
+    [ "write", "writev" ],
+    [ "pwrite", "pwritev" ]
   ],
-  "readv": [
-    "read"
-  ],
-  "pread": [
-    "preadv"
-  ],
-  "preadv": [
-    "pread"
-  ],
-  "write": [
-    "writev"
-  ],
-  "writev": [
-    "write"
-  ],
-  "pwrite": [
-    "pwritev"
-  ],
-  "pwritev": [
-    "pwrite"
-  ]
+  "mapping": {
+    "read": 0,
+    "readv": 0,
+    "pread": 1,
+    "preadv": 1,
+    "write": 2
+    "writev": 2
+    "pwrite": 3
+    "pwritev": 3
+  }
 }
