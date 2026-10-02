@@ -41,6 +41,7 @@ jobs:
         sudo cp -r environments /home/${{ env.USERNAME }}
         sudo cp -r config /home/${{ env.USERNAME }}
         sudo chown -R ${{ env.UID }}:${{ env.UID }} /home/${{ env.USERNAME }}
+        sudo systemctl start user@${{ env.UID }}.service
         sudo loginctl enable-linger ${{ env.USERNAME }}
     - name: Run Scripts
       run: |
