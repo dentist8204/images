@@ -16,35 +16,59 @@ seccomp_profile = {
   ]
 }
 
-with open("config/seccomp-replacements.json", "r", encoding="utf-8") as replacements_file:
-  replacements = json.load(replacements_file)
+with open("config/seccomp-baseline.json", "r", encoding="utf-8") as baseline_file:
+  baseline = json.load(baseline_file)
+
+allowed_names = set()
+
+for category in baseline:
+  allow_names.update(category["names"])
 
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   input = input_file.read()
 
-allowed_ids     = re.findall(r"@\[(\d+)\]", input)
-allowed_ids_set = set(allowed_ids)
-blocked_ids     = re.findall(r"@error\[(\d+)\]: (\d)", input)
-blocked_ids     = [id for id in blocked_ids if id[0] not in allowed_ids_set]
+allowed_ids = set(re.findall(r"@\[(\d+)\]", input))
+blocked_ids = re.findall(r"@error\[(\d+)\]: (\d)", input)
+blocked_ids = [id for id in blocked_ids if id[0] not in allowed_ids]
+
+with open("config/seccomp-clusters.json", "r", encoding="utf-8") as clusters_file:
+  clusters = json.load(clusters_file)
 
 for id in allowed_ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
-
-  name = result.stdout.strip()
   
-  if name in replacements:
-    seccomp_profile["syscalls"].extend(replacements[name])
-  else:
-    seccomp_profile["syscalls"][0]["names"].append(name)
+  name = result.stdout.strip()
+  allowed_names.add(name)
 
-seccomp_profile["syscalls"][0]["names"].sort()
+  if name in clusters:
+    allowed_names.update(clusters[name])
+
+syscalls = seccomp_profile["syscalls"]
+
+with open("config/seccomp-replacements.json", "r", encoding="utf-8") as replacements_file:
+  replacements = json.load(replacements_file)
+
+with open("config/seccomp-swaps.json", "r", encoding="utf-8") as swaps_file:
+  swaps = json.load(swaps_file)
+
+for name in list(allowed_names):
+  if name in replacements:
+    allowed_names.remove(name)
+    syscalls.extend(replacements[name])
+  elif name in swaps:
+    allowed_names.remove(name)
+    allowed_names.add(swaps[name])
+
+allow_list = syscalls[0]["names"]
+allow_list = list(allowed_names)
+allow_list.sort()
 
 for id, errnoRet in blocked_ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
 
   name = result.stdout.strip()
   
-  seccomp_profile["syscalls"].append({
+  syscalls.append({
     "names": [name],
     "action": "SCMP_ACT_ERRNO",
     "errnoRet": int(errnoRet),
