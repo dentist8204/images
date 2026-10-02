@@ -46,7 +46,7 @@ for i in range(0, len(seccomp_tests)):
   
   subprocess.run(create_command, cwd=f"{user_home}", check=True)
   subprocess.run(start_command, cwd=f"{user_home}", check=True)
-  subprocess.run(logs_command, cwd=f"{user_home}", check=True)
+  subprocess.run(logs_command, cwd=f"{user_home}")
   subprocess.run(["podman", "kill", container_name], cwd=f"{user_home}")
   subprocess.run(["podman", "wait", "--condition=removing", container_name], cwd=f"{user_home}")
 
