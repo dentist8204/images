@@ -33,15 +33,14 @@ jobs:
     - name: Setup Temporary User
       run: |
         set -euo pipefail
-        echo "${{ env.USERNAME }}:x:${{ env.UID }}:${{ env.UID }}::/home/${{ env.USERNAME }}:/bin/bash" | sudo tee -a /etc/passwd
-        echo "${{ env.USERNAME }}:157257050:65536" | sudo tee -a /etc/subuid
-        echo "${{ env.USERNAME }}:157257050:65536" | sudo tee -a /etc/subgid
-        sudo mkdir -p /home/${{ env.USERNAME }}
-        sudo cp -r /etc/skel/. /home/${{ env.USERNAME }}
+        sudo groupadd --gid ${{ env.UID }} ${{ env.USERNAME }}
+        sudo useradd --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
+        echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subuid
+        echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subgid
         sudo cp -r environments /home/${{ env.USERNAME }}
+        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/environments
         sudo cp -r config /home/${{ env.USERNAME }}
-        sudo chown -R ${{ env.UID }}:${{ env.UID }} /home/${{ env.USERNAME }}
-        sudo systemctl start user@${{ env.UID }}.service
+        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/config
         sudo loginctl enable-linger ${{ env.USERNAME }}
     - name: Run Scripts
       run: |
