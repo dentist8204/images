@@ -35,8 +35,8 @@ jobs:
         set -euo pipefail
         sudo groupadd --gid ${{ env.UID }} ${{ env.USERNAME }}
         sudo useradd --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
-        echo "${{ env.USERNAME }}:157257050:32" | sudo tee /etc/subuid
-        echo "${{ env.USERNAME }}:157257050:32" | sudo tee /etc/subgid
+        echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subuid
+        echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subgid
         sudo cp -r environments /home/${{ env.USERNAME }}
         sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/environments
         sudo cp -r config /home/${{ env.USERNAME }}
