@@ -33,4 +33,19 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: "antlr"
+  make-seccomp-profiles:
+    needs:
+     - antlr
+     - derivatives
+    permissions:
+      actions: write
+    strategy:
+      matrix:
+        image_name:
+          - "age"
+          - "antlr"
+          - "latex"
+    uses: ./.github/workflows/make-seccomp-profile.yml
+    with:
+      image_name: ${{ matrix.image_name }}
     
