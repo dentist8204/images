@@ -6,12 +6,12 @@ import time
 
 bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/trace-seccomp-logs.bt"])
 
+time.sleep(5)
+
 bpftrace_exit_code = bpftrace.poll()
 
 if bpftrace_exit_code is not None and bpftrace_exit_code != 0:
   sys.exit(1)
-
-time.sleep(5)
 
 image_name = sys.argv[1]
 
