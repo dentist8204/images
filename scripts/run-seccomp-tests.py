@@ -6,7 +6,7 @@ import time
 
 bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/trace-seccomp-logs.bt"])
 
-time.sleep(5)
+time.sleep(3)
 
 bpftrace_exit_code = bpftrace.poll()
 
@@ -21,39 +21,37 @@ with open("config/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_f
 username      = sys.argv[3]
 user_home     = f"/home/{username}"
 runtime_dir   = sys.argv[4]
-container_ids = []
+sudo_command  = ["sudo", "-u", f"{username}",
+                 "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
+                 f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
+                 f"XDG_CACHE_HOME={user_home}/.cache"]
 
-for test in seccomp_tests:
-  create_command = ["sudo", "-u", f"{username}",
-                    "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
-                    f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
-                    f"XDG_CACHE_HOME={user_home}/.cache",
-                    "podman", "create", "--runtime=crun", "--cap-drop=all",
-                    "--workdir=/home/inner-user/entry",
+for i in range(0, len(seccomp_tests)):
+  container_name = f"container_name_{i}"
+  
+  create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
+                    "--workdir=/home/inner-user/entry", f"--name={container_name}",
                     f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
                     f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
                     f"{sys.argv[2]}/{image_name}:latest"]
-
-  create_command.extend(test)
+  start_command  = ["podman", "start", container_name]
+  logs_command   = ["timeout", "60s",
+                    "podman", "logs", "-f" container_name]
   
-  result = subprocess.run(create_command, cwd=f"{user_home}", capture_output=True, text=True, check=True)
+  create_command = sudo_command + create_command
+  start_command  = sudo_command + start_command
+  logs_command   = sudo_command + logs_command
+  
+  create_command.extend(seccomp_tests[i])
+  
+  subprocess.run(create_command, cwd=f"{user_home}", check=True)
+  subprocess.run(start_command, cwd=f"{user_home}", check=True)
+  subprocess.run(logs_command, cwd=f"{user_home}", check=True)
+  subprocess.run(["podman", "kill", container_name], cwd=f"{user_home}")
+  subprocess.run(["podman", "wait", "--condition=removing", container_name], cwd=f"{user_home}")
 
-  container_id = result.stdout.strip()
-
-  subprocess.run(["sudo", "-u", f"{username}",
-                  "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
-                  f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
-                  f"XDG_CACHE_HOME={user_home}/.cache",
-                  "podman", "start", container_id], cwd=f"{user_home}", check=True)
-  subprocess.run(["sudo", "-u", f"{username}",
-                  "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
-                  f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
-                  f"XDG_CACHE_HOME={user_home}/.cache",
-                  "timeout", "60s",
-                  "podman", "wait", container_id], cwd=f"{user_home}", check=True)
-
-time.sleep(5)
+time.sleep(3)
 
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
 
-time.sleep(5)
+time.sleep(3)
