@@ -2,8 +2,8 @@ name: All
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '47 7 * * *'
+  pull_request:
+    types: [ opened, synchronize ]
 
 jobs:
   base:
