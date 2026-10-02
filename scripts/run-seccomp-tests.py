@@ -37,18 +37,22 @@ for i in range(0, len(seccomp_tests)):
   start_command  = ["podman", "start", container_name]
   logs_command   = ["timeout", "60s",
                     "podman", "logs", "-f", container_name]
+  kill_command   = ["podman", "kill", container_name]
+  wait_command   = ["podman", "wait", "--condition=removing", container_name]
   
   create_command = sudo_command + create_command
   start_command  = sudo_command + start_command
   logs_command   = sudo_command + logs_command
+  kill_command   = sudo_command + kill_command
+  wait_command   = sudo_command + wait_command
   
   create_command.extend(seccomp_tests[i])
   
   subprocess.run(create_command, cwd=f"{user_home}", check=True)
   subprocess.run(start_command, cwd=f"{user_home}", check=True)
   subprocess.run(logs_command, cwd=f"{user_home}")
-  subprocess.run(["podman", "kill", container_name], cwd=f"{user_home}")
-  subprocess.run(["podman", "wait", "--condition=removing", container_name], cwd=f"{user_home}")
+  subprocess.run(kill_command, cwd=f"{user_home}")
+  subprocess.run(wait_command, cwd=f"{user_home}")
 
 time.sleep(3)
 
