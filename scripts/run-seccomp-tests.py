@@ -36,7 +36,7 @@ for i in range(0, len(seccomp_tests)):
                     f"{sys.argv[2]}/{image_name}:latest"]
   start_command  = ["podman", "start", container_name]
   logs_command   = ["timeout", "60s",
-                    "podman", "logs", "-f" container_name]
+                    "podman", "logs", "-f", container_name]
   
   create_command = sudo_command + create_command
   start_command  = sudo_command + start_command
