@@ -59,9 +59,8 @@ for name in list(allowed_names):
     allowed_names.remove(name)
     allowed_names.add(swaps[name])
 
-allow_list = syscalls[0]["names"]
-allow_list = list(allowed_names)
-allow_list.sort()
+syscalls[0]["names"] = list(allowed_names)
+syscalls[0]["names"].sort()
 
 for id, errnoRet in blocked_ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
