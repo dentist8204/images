@@ -24,7 +24,7 @@ jobs:
     permissions:
       actions: write
     steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
     - name: Install Packages
       run: |
         set -euo pipefail
@@ -47,7 +47,7 @@ jobs:
         set -euo pipefail
         python3 scripts/run-seccomp-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }}
         python3 scripts/format-seccomp-profile.py
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: seccomp-${{ inputs.image_name }}
         path: |
