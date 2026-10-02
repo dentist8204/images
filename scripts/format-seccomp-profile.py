@@ -32,8 +32,9 @@ blocked_ids = re.findall(r"@error\[(\d+)\]: (\d)", input)
 blocked_ids = [id for id in blocked_ids if id[0] not in allowed_ids]
 
 with open("config/seccomp-clusters.json", "r", encoding="utf-8") as clusters_file:
-  clusters        = json.load(clusters_file)["clusters"]
-  cluster_mapping = json.load(clusters_file)["mapping"]
+  temp            = json.load(clusters_file)
+  clusters        = temp["clusters"]
+  cluster_mapping = temp["mapping"]
 
 for id in allowed_ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
