@@ -49,9 +49,9 @@ for i in range(0, len(seccomp_tests)):
   
   subprocess.run(create_command, cwd=f"{user_home}", check=True)
   subprocess.run(start_command, cwd=f"{user_home}", check=True)
-  subprocess.run(logs_command, cwd=f"{user_home}")
-  subprocess.run(kill_command, cwd=f"{user_home}")
-  subprocess.run(wait_command, cwd=f"{user_home}")
+  subprocess.run(logs_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
+  subprocess.run(kill_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL))
+  subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL))
 
 time.sleep(3)
 
