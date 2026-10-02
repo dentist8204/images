@@ -34,7 +34,6 @@ for test in seccomp_tests:
                     f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
                     f"{sys.argv[2]}/{image_name}:latest"]
 
-  
   create_command.extend(test)
   
   result = subprocess.run(create_command, cwd=f"{user_home}", capture_output=True, text=True, check=True)
