@@ -1,0 +1,17 @@
+[
+  {
+    "names": [
+      "clock_gettime",
+      "getcpu",
+      "gettimeofday",
+      "time"
+    ],
+    "comment": "potentially invisible syscalls provided by vDSO (from vdso(7))"
+  },
+  {
+    "names": [
+      "rt_sigreturn"
+    ],
+    "comment": "may only appear during recovery paths"
+  }
+]
