@@ -20,9 +20,8 @@ with open("config/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_f
 
 username      = sys.argv[3]
 user_home     = f"/home/{username}"
-runtime_dir   = sys.argv[4]
 sudo_command  = ["sudo", "-u", f"{username}",
-                 "env", f"XDG_RUNTIME_DIR={runtime_dir}", f"HOME={user_home}",
+                 "env", f"XDG_RUNTIME_DIR={sys.argv[4]}", f"HOME={user_home}",
                  f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
                  f"XDG_CACHE_HOME={user_home}/.cache"]
 
