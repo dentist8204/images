@@ -22,7 +22,7 @@ with open("config/seccomp-baseline.json", "r", encoding="utf-8") as baseline_fil
 allowed_names = set()
 
 for category in baseline:
-  allow_names.update(category["names"])
+  allowed_names.update(category["names"])
 
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   input = input_file.read()
