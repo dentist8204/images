@@ -1,17 +1,17 @@
 [
   {
     "names": {
-      "write",
-      "writev"
-    },
-    "comment": "writing"
-  },
-  {
-    "names": {
       "read",
       "readv"
     },
     "comment": "reading"
+  },
+  {
+    "names": {
+      "write",
+      "writev"
+    },
+    "comment": "writing"
   },
   {
     "names": {
