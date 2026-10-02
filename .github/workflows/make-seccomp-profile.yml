@@ -33,19 +33,15 @@ jobs:
     - name: Setup Temporary User
       run: |
         set -euo pipefail
-        echo "127.0.0.1 $(hostname)" | sudo tee -a /etc/hosts
-        sudo sed -i 's/^passwd:.*/passwd: files/' /etc/nsswitch.conf
-        sudo sed -i 's/^group:.*/group: files/' /etc/nsswitch.conf
-        sudo groupadd --gid ${{ env.UID }} ${{ env.USERNAME }}
-        echo "============"
-        sudo useradd --no-log-init --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
+        echo "${{ env.USERNAME }}:x:${{ env.UID }}:${{ env.UID }}::/home/${{ env.USERNAME }}:/bin/bash" | sudo tee -a /etc/passwd
         echo "${{ env.USERNAME }}:157257050:65536" | sudo tee -a /etc/subuid
         echo "${{ env.USERNAME }}:157257050:65536" | sudo tee -a /etc/subgid
+        sudo mkdir -p /home/${{ env.USERNAME }}
+        sudo cp -r /etc/skel/. /home/${{ env.USERNAME }}
         sudo cp -r environments /home/${{ env.USERNAME }}
-        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/environments
         sudo cp -r config /home/${{ env.USERNAME }}
-        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/config
-        sudo loginctl enable-linger temp-user
+        sudo chown -R ${{ env.UID }}:${{ env.UID }} /home/${{ env.USERNAME }}
+        sudo loginctl enable-linger ${{ env.USERNAME }}
     - name: Run Scripts
       run: |
         set -euo pipefail
