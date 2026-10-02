@@ -52,6 +52,8 @@ for test in seccomp_tests:
                   "timeout", "60s",
                   "podman", "wait", container_id], cwd=f"{user_home}", check=True)
 
+time.sleep(5)
+
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
 
 time.sleep(5)
