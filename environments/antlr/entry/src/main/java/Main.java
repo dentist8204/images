@@ -9,7 +9,7 @@ class Main {
   public static void main(String [] args) {
     String file_name = args[0];
 
-    if (file_name.equals("exit") {
+    if (file_name.equals("exit")) {
       System.out.println("exiting");
       System.exit(1);
     }
