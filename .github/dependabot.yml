@@ -20,6 +20,3 @@ updates:
     groups:
       all-images:
         patterns: [ "*" ]
-    ignore:
-      - dependency-name: "ubuntu"
-        versions: ["> 22.04"]
