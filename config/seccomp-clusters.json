@@ -10,9 +10,9 @@
     "readv": 0,
     "pread": 1,
     "preadv": 1,
-    "write": 2
-    "writev": 2
-    "pwrite": 3
+    "write": 2,
+    "writev": 2,
+    "pwrite": 3,
     "pwritev": 3
   }
 }
