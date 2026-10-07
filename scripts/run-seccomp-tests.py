@@ -30,7 +30,7 @@ for i in range(0, len(seccomp_tests)):
                  f"XDG_CACHE_HOME={user_home}/.cache",
                  "podman", "run", "--runtime=crun", "--cap-drop=all", "--rm",
                  "--workdir=/home/inner-user/entry", f"--name={container_name}",
-                 "--stop-timeout=60",
+                 "--stop-timeout=90",
                  f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
                  f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
                  f"{sys.argv[2]}/{image_name}:latest"]
