@@ -95,5 +95,21 @@
       ],
       "comment": "allow if PR_SET_NAME (from include/uapi/linux/prctl.h)"
     }
+  ],
+  "fcntl": [
+    {
+      "names": [
+        "fcntl"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 1,
+          "value": 8,
+          "op": "SCMP_CMP_LT"
+        }
+      ],
+      "comment": "allow if F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
+    }
   ] 
 }
