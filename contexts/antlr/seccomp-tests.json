@@ -1,0 +1,24 @@
+[
+  [
+    "make",
+    "all"
+  ],
+  [
+    "java",
+    "-jar",
+    "bin/target.jar",
+    "exit"
+  ],
+  [
+    "java",
+    "-jar",
+    "bin/target.jar",
+    "/home/runner"
+  ],
+  [
+    "java",
+    "-jar",
+    "bin/target.jar",
+    "out.txt"
+  ]
+]
