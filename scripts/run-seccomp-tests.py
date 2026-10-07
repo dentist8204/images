@@ -15,8 +15,8 @@ if bpftrace_exit_code is not None and bpftrace_exit_code != 0:
 
 image_name = sys.argv[1]
 
-with open("config/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_file:
-  seccomp_tests = json.load(seccomp_tests_file)[image_name]
+with open(f"contexts/{image_name}/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_file:
+  seccomp_tests = json.load(seccomp_tests_file)
 
 username      = sys.argv[3]
 user_home     = f"/home/{username}"
