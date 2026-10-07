@@ -79,5 +79,21 @@
       "errnoRet": 1,
       "comment": "disallow to cause failure"
     }
-  ]
+  ],
+  "prctl": [
+    {
+      "names": [
+        "prctl"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 0,
+          "value": 15,
+          "op": "SCMP_CMP_EQ"
+        }
+      ],
+      "comment": "allow if PR_SET_NAME (from include/uapi/linux/prctl.h)"
+    }
+  ] 
 }
