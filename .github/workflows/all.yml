@@ -10,6 +10,7 @@ on:
      - reopened
      - synchronize
     paths-ignore:
+     - .github/dependabot.yml
      - LICENSE
      - README.md
 
