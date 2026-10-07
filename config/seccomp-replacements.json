@@ -127,5 +127,67 @@
       ],
       "comment": "allow if MADV_DONTNEED (from include/uapi/asm-generic/mann-common.h)"
     }
+  ],
+  "futex": [
+    {
+      "names": [
+        "futex"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 1,
+          "value": 127,
+          "valueTwo": 0,
+          "op": "SCMP_CMP_MASKED_EQ"
+        }
+      ],
+      "comment": "allow if FUTEX_WAIT (from include/uapi/linux/futex.h)"
+    },
+    {
+      "names": [
+        "futex"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 1,
+          "value": 127,
+          "valueTwo": 1,
+          "op": "SCMP_CMP_MASKED_EQ"
+        }
+      ],
+      "comment": "allow if FUTEX_WAKE (from include/uapi/linux/futex.h)"
+    },
+    {
+      "names": [
+        "futex"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 1,
+          "value": 127,
+          "valueTwo": 9,
+          "op": "SCMP_CMP_MASKED_EQ"
+        }
+      ],
+      "comment": "allow if FUTEX_WAIT_BITSET (from include/uapi/linux/futex.h)"
+    },
+    {
+      "names": [
+        "futex"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 1,
+          "value": 127,
+          "valueTwo": 10,
+          "op": "SCMP_CMP_MASKED_EQ"
+        }
+      ],
+      "comment": "allow if FUTEX_WAKE_BITSET (from include/uapi/linux/futex.h)"
+    }
   ]
 }
