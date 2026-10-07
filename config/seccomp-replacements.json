@@ -111,5 +111,21 @@
       ],
       "comment": "allow if F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
     }
-  ] 
+  ],
+  "madvise": [
+    {
+      "names": [
+        "madvise"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 2,
+          "value": 4,
+          "op": "SCMP_CMP_EQ"
+        }
+      ],
+      "comment": "allow if MADV_DONTNEED (from include/uapi/asm-generic/mann-common.h)"
+    }
+  ]
 }
