@@ -6,17 +6,23 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "20:56"
+    cooldown:
+      default-days: 5
     groups:
-      all-actions:
+      actions:
+        applies-to: "version-updates"
         patterns: [ "*" ]
   - package-ecosystem: "docker"
-    directories: 
+    directories:
       - "/dockerfiles/antlr"
       - "/dockerfiles/base"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "20:56"
+    cooldown:
+      default-days: 5
     groups:
-      all-images:
+      images:
+        applies-to: "version-updates"
         patterns: [ "*" ]
