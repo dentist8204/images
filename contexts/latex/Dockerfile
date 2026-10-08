@@ -1,5 +1,5 @@
 FROM ghcr.io/dentist8204/images/base:latest
 
-RUN pacman -Sy --noconfirm texlive-basic texlive-latex texlive-latexrecommended texlive-latexextra texlive-fontsrecommended texlive-mathscience texlive-binextra
+RUN apk add --no-cache texlive texlive-latexrecommended texlive-latexextra texlive-pictures
 
-LABEL org.opencontainers.image.description="Arch image with texlive installed"
+LABEL org.opencontainers.image.description="Alpine image with texlive installed"

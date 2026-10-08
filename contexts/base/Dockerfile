@@ -1,9 +1,9 @@
-FROM docker.io/archlinux:latest@sha256:f3691b4dde62ba4c4b6f0ae2c1fbf28e8c0c8c4b9a35c7e06dc1f70e21aa29f6
+FROM docker.io/alpine:3.24.2@sha256:d56c381f961d307a21b3ca004cf1e3910f106644aefb1f43e654c8a56c4fd395
 
 ENV username=inner-user
 ENV uid=1007
 
-RUN groupadd --gid ${uid} ${username}
-RUN useradd --uid ${uid} --gid ${uid} --create-home --shell /bin/bash ${username}
+RUN addgroup -g ${uid} ${username}
+RUN adduser -u ${uid} -G ${username} -D ${username}
 
-LABEL org.opencontainers.image.description="Arch image with an unprivileged user"
+LABEL org.opencontainers.image.description="Alpine image with an unprivileged user"
