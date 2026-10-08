@@ -60,26 +60,8 @@
       "comment": "allow AF_INET6"
     }
   ],
-  "ioctl": [
-    {
-      "names": [
-        "ioctl"
-      ],
-      "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 1,
-      "comment": "disallow to cause failure"
-    }
-  ],
-  "ptrace": [
-    {
-      "names": [
-        "ptrace"
-      ],
-      "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 1,
-      "comment": "disallow to cause failure"
-    }
-  ],
+  "ioctl": [],
+  "ptrace": [],
   "prctl": [
     {
       "names": [
