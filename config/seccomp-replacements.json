@@ -29,7 +29,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow AF_UNIX"
+      "comment": "allow AF_UNIX (from include/linux/socket.h)"
     },
     {
       "names": [
@@ -43,7 +43,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow AF_INET"
+      "comment": "allow AF_INET (from include/linux/socket.h)"
     },
     {
       "names": [
@@ -57,7 +57,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow AF_INET6"
+      "comment": "allow AF_INET6 (from include/linux/socket.h)"
     }
   ],
   "ioctl": [
@@ -67,7 +67,7 @@
       ],
       "action": "SCMP_ACT_ERRNO",
       "errnoRet": 1,
-      "comment": "disallow as to cause failure"
+      "comment": "disallow to cause failure"
     }
   ],
   "ptrace": [
@@ -77,7 +77,7 @@
       ],
       "action": "SCMP_ACT_ERRNO",
       "errnoRet": 1,
-      "comment": "disallow as to cause failure"
+      "comment": "disallow to cause failure"
     }
   ],
   "prctl": [
@@ -93,7 +93,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow if PR_SET_NAME (from include/uapi/linux/prctl.h)"
+      "comment": "allow PR_SET_NAME (from include/uapi/linux/prctl.h)"
     }
   ],
   "fcntl": [
@@ -109,7 +109,7 @@
           "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow if F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
+      "comment": "allow F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
     },
     {
       "names": [
@@ -139,7 +139,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow if MADV_DONTNEED (from include/uapi/asm-generic/mann-common.h)"
+      "comment": "allow MADV_DONTNEED (from include/uapi/asm-generic/mann-common.h)"
     }
   ],
   "futex": [
@@ -156,7 +156,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow if FUTEX_WAIT (from include/uapi/linux/futex.h)"
+      "comment": "allow FUTEX_WAIT (from include/uapi/linux/futex.h)"
     },
     {
       "names": [
@@ -171,7 +171,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow if FUTEX_WAKE (from include/uapi/linux/futex.h)"
+      "comment": "allow FUTEX_WAKE (from include/uapi/linux/futex.h)"
     },
     {
       "names": [
@@ -186,7 +186,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow if FUTEX_WAIT_BITSET (from include/uapi/linux/futex.h)"
+      "comment": "allow FUTEX_WAIT_BITSET (from include/uapi/linux/futex.h)"
     },
     {
       "names": [
@@ -201,7 +201,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow if FUTEX_WAKE_BITSET (from include/uapi/linux/futex.h)"
+      "comment": "allow FUTEX_WAKE_BITSET (from include/uapi/linux/futex.h)"
     }
   ]
 }
