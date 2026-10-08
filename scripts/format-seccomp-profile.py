@@ -19,10 +19,10 @@ seccomp_profile = {
 with open("config/seccomp-baseline.json", "r", encoding="utf-8") as baseline_file:
   baseline = json.load(baseline_file)
 
-allowed_names = []
+allowed_names = set()
 
 for category in baseline:
-  allowed_names.extend(category["names"])
+  allowed_names.update(category["names"])
 
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   input = input_file.read()
@@ -47,13 +47,13 @@ for id in allowed_ids:
   name = result.stdout.strip()
 
   if name in cluster_mapping:
-    allowed_names.extend(clusters[cluster_mapping[name]])
+    allowed_names.update(clusters[cluster_mapping[name]])
   elif name in swaps:
-    allowed_names.append(swaps[name])
+    allowed_names.add(swaps[name])
   elif name in replacements:
     syscalls.extend(replacements[name])
   else:
-    allowed_names.append(name)
+    allowed_names.add(name)
 
 syscalls[0]["names"] = list(allowed_names)
 syscalls[0]["names"].sort()
