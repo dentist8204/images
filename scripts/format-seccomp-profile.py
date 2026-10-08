@@ -47,7 +47,6 @@ for id in allowed_ids:
   name = result.stdout.strip()
 
   if name in cluster_mapping:
-    allowed_names.append(name)
     allowed_names.extend(clusters[cluster_mapping[name]])
   elif name in swaps:
     allowed_names.append(swaps[name])
