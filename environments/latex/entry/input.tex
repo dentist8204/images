@@ -1,6 +1,9 @@
 \documentclass{article}
-\usepackage{tikz}
+\usepackage{amsmath}
 \usepackage{fullpage}
+\usepackage{makecell}
+\usepackage{multirow}
+\usepackage{tikz}
 
 \title{Title}
 \author{Author's Name}
@@ -55,5 +58,21 @@ hello & $w_1$ & hello & $w_1$ \\
 \hline
 \end{tabular}
 }
+
+\question
+\subquestion
+\begin{align*}
+\langle\text{hello}\rangle&\models\texttt{START }\langle\text{middle}\rangle\texttt{ END}\mid\epsilon\\
+\langle\text{middle}\rangle&\models\texttt{B}\mid\texttt{A}
+\end{align*}
+\subquestion
+\begin{tabular}{|c|c|}
+\hline
+\textbf{hello} & \textbf{hello} \\
+\hline\hline
+\makecell{$\langle\text{hello}\rangle\models$\\\texttt{START }\\$\langle\text{middle}\rangle$\\\texttt{ END}} & hello \\
+\makecell{$\langle\text{hello}\rangle\models$\\$\mid\epsilon$} & hello \\
+\hline
+\end{tabular}
 
 \end{document}
