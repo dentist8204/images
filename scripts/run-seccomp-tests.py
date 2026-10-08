@@ -30,6 +30,7 @@ for i in range(0, len(seccomp_tests)):
   
   create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
                     "--workdir=/home/inner-user/entry", f"--name={container_name}",
+                    "--userns=keep-id:uid=1007,gid=1007,size=128",
                     f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
                     f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
                     f"{sys.argv[2]}/{image_name}:latest"]
