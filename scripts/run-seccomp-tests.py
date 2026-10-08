@@ -6,7 +6,7 @@ import time
 
 bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/trace-seccomp-logs.bt"])
 
-time.sleep(3)
+time.sleep(5)
 
 bpftrace_exit_code = bpftrace.poll()
 
@@ -54,8 +54,8 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(kill_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
   subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
-time.sleep(3)
+time.sleep(5)
 
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
 
-time.sleep(3)
+time.sleep(5)
