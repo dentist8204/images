@@ -12,6 +12,11 @@
   [
     "latexmk",
     "-pdf",
+    "fonts.tex"
+  ],
+  [
+    "latexmk",
+    "-pdf",
     "error.tex"
   ]
 ]
