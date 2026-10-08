@@ -52,12 +52,6 @@ for id in allowed_ids:
     allowed_names.append(swaps[name])
   elif name in replacements:
     syscalls.extend(replacements[name])
-    syscalls.append({
-      "names": [name],
-      "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 1,
-      "comment": "disallow to cause failure"
-    })
   else:
     allowed_names.append(name)
 
