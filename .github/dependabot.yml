@@ -14,8 +14,8 @@ updates:
         patterns: [ "*" ]
   - package-ecosystem: "docker"
     directories:
-      - "/dockerfiles/antlr"
-      - "/dockerfiles/base"
+      - "/contexts/antlr"
+      - "/contexts/base"
     schedule:
       interval: "weekly"
       day: "monday"
