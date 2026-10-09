@@ -6,7 +6,7 @@ import time
 
 bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/trace-seccomp-logs.bt"])
 
-time.sleep(3)
+time.sleep(5)
 
 bpftrace_exit_code = bpftrace.poll()
 
@@ -30,6 +30,7 @@ for i in range(0, len(seccomp_tests)):
   
   create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
                     "--workdir=/home/inner-user/entry", f"--name={container_name}",
+                    "--userns=keep-id:uid=1007,gid=1007",
                     f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
                     f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
                     f"{sys.argv[2]}/{image_name}:latest"]
@@ -53,8 +54,8 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(kill_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
   subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
-time.sleep(3)
+time.sleep(5)
 
 subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
 
-time.sleep(3)
+time.sleep(5)

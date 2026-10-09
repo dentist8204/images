@@ -2,6 +2,21 @@
   [
     "latexmk",
     "-pdf",
-    "input.tex"
+    "testmath.tex"
+  ],
+  [
+    "latexmk",
+    "-pdf",
+    "pgfmanual-en-library-automata.tex"
+  ],
+  [
+    "latexmk",
+    "-pdf",
+    "fonts.tex"
+  ],
+  [
+    "latexmk",
+    "-pdf",
+    "error.tex"
   ]
 ]
