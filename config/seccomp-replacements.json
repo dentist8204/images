@@ -80,6 +80,16 @@
       "comment": "disallow to cause failure"
     }
   ],
+  "capset": [
+    {
+      "names": [
+        "capset"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "disallow to cause failure"
+    }
+  ],
   "prctl": [
     {
       "names": [
