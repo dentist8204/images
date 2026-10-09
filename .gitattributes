@@ -1,5 +1,7 @@
 environments/** linguist-vendored
 
+.github/** linguist-detectable=true
+
 *.yml linguist-detectable=true
 *.yml linguist-language=YAML
 
