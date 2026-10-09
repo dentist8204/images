@@ -1,3 +1,4 @@
 {
-  "pread": "pread64"
+  "pread": "pread64",
+  "pwrite": "pwrite64"
 }
