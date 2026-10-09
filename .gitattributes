@@ -1,6 +1,8 @@
 environments/** linguist-vendored
 
 .github/** linguist-detectable=true
+.github/** linguist-vendored=false
+.github/** linguist-documentation=false
 
 config/default-docker-log-seccomp.json linguist-vendored
 
