@@ -35,9 +35,6 @@ with open("config/seccomp-clusters.json", "r", encoding="utf-8") as clusters_fil
 with open("config/seccomp-replacements.json", "r", encoding="utf-8") as replacements_file:
   replacements = json.load(replacements_file)
 
-with open("config/seccomp-swaps.json", "r", encoding="utf-8") as swaps_file:
-  swaps = json.load(swaps_file)
-
 allowed_ids = set(re.findall(r"@\[(\d+)\]", input))
 syscalls    = seccomp_profile["syscalls"]
 
@@ -48,12 +45,18 @@ for id in allowed_ids:
 
   if name in cluster_mapping:
     allowed_names.update(clusters[cluster_mapping[name]])
-  elif name in swaps:
-    allowed_names.add(swaps[name])
   elif name in replacements:
     syscalls.extend(replacements[name])
   else:
     allowed_names.add(name)
+
+with open("config/seccomp-swaps.json", "r", encoding="utf-8") as swaps_file:
+  swaps = json.load(swaps_file)
+
+for name in list(allowed_names):
+  if name in swaps:
+    allowed_names.remove(name)
+    allowed_names.add(swaps[name])
 
 syscalls[0]["names"] = list(allowed_names)
 syscalls[0]["names"].sort()
