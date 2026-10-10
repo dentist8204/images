@@ -55,6 +55,8 @@ jobs:
     permissions:
       actions: write
     uses: ./.github/workflows/make-all-seccomp-profiles.yml
+    with:
+      upload: false
 
   finish:
     runs-on: ubuntu-26.04

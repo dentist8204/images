@@ -3,6 +3,10 @@ name: Make Seccomp Profile
 on:
   workflow_dispatch:
     inputs:
+      upload:
+        type: boolean
+        default: false
+    inputs:
       image_name:
         required: true
         type: choice
@@ -12,6 +16,10 @@ on:
           - "latex"
 
   workflow_call:
+    inputs:
+      upload:
+        type: boolean
+        default: false
     inputs:
       image_name:
         required: true
@@ -56,6 +64,7 @@ jobs:
           python3 scripts/seccomp/run-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }}
           python3 scripts/seccomp/format-profile.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ inputs.upload }}
         with:
           name: seccomp-${{ inputs.image_name }}
           path: |

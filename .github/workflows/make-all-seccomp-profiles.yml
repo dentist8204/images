@@ -2,7 +2,15 @@ name: Make All Seccomp Profiles
 
 on:
   workflow_dispatch:
+    inputs:
+      upload:
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      upload:
+        type: boolean
+        default: false
 
 concurrency:
   group: make-all-seccomp-profiles-${{ github.ref || github.run_id }}
@@ -21,4 +29,5 @@ jobs:
     uses: ./.github/workflows/make-seccomp-profile.yml
     with:
       image_name: ${{ matrix.image_name }}
+      upload: ${{ inputs.upload }}
 
