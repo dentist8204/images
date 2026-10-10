@@ -1,0 +1,67 @@
+name: Push and Upload
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: check-pr-${{ github.event_name }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  check-paths:
+    runs-on: ubuntu-26.04
+    outputs:
+      build: ${{ steps.filter.outputs.build }}
+      audit: ${{ steps.filter.outputs.audit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            build:
+              - '.github/workflows/build-and-push.yml'
+              - '.github/workflows/build-and-push-all-images.yml'
+              - 'contexts/**'
+            audit:
+              - '.github/workflows/make-seccomp-profile.yml'
+              - '.github/workflows/make-all-seccomp-profiles.yml'
+              - 'config/seccomp/**'
+              - 'environments/**'
+              - 'scripts/seccomp/**'
+
+  build:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.build == 'true' }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/build-and-push-all-images.yml
+    with:
+      push: true
+
+  audit:
+    needs:
+      - check-paths
+      - build
+    if: ${{ needs.check-paths.outputs.audit  == 'true' && (needs.build.result == 'success' || needs.build.result  == 'skipped') }}
+    permissions:
+      actions: write
+    uses: ./.github/workflows/make-all-seccomp-profiles.yml
+    with:
+      upload: true
+
+  finish:
+    runs-on: ubuntu-26.04
+    needs:
+      - build
+      - audit
+    if: ${{ (needs.audit.result == 'success' || needs.audit.result == 'skipped') && (needs.build.result == 'success' || needs.build.result  == 'skipped') }}
+    steps:
+      - run: true
+    
