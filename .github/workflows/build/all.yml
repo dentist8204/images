@@ -1,0 +1,44 @@
+name: Build and Push All Images
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  base:
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/build/build-and-push.yml
+    with:
+      image_name: "base"
+  derivatives:
+    needs: base
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    strategy:
+      matrix:
+        image_name:
+          - "age"
+          - "latex"
+    uses: ./.github/workflows/build/build-and-push.yml
+    with:
+      image_name: ${{ matrix.image_name }}
+  antlr:
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/build/build-and-push.yml
+    with:
+      image_name: "antlr"

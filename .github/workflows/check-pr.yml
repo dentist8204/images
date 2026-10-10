@@ -34,43 +34,22 @@ jobs:
             - 'config/seccomp/**'
             - 'environments/**'
             - 'scripts/seccomp/**'
-  base:
+
+  build:
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.build }} == 'true'
     permissions:
       contents: read
       packages: write
       id-token: write
       attestations: write
-    uses: ./.github/workflows/build-and-push.yml
-    with:
-      image_name: "base"
-  derivatives:
-    needs: base
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-      attestations: write
-    strategy:
-      matrix:
-        image_name:
-          - "age"
-          - "latex"
-    uses: ./.github/workflows/build-and-push.yml
-    with:
-      image_name: ${{ matrix.image_name }}
-  antlr:
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-      attestations: write
-    uses: ./.github/workflows/build-and-push.yml
-    with:
-      image_name: "antlr"
-  make-seccomp-profiles:
+    uses: ./.github/workflows/build/all.yml
+
+  audit:
     needs:
-     - antlr
-     - derivatives
+      - check-paths
+      - build
+    if: ${{ needs.check-paths.outputs.audit }} == 'true' && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
     permissions:
       actions: write
     strategy:
@@ -79,13 +58,16 @@ jobs:
           - "age"
           - "antlr"
           - "latex"
-    uses: ./.github/workflows/make-seccomp-profile.yml
+    uses: ./.github/workflows/audit/all.yml
     with:
       image_name: ${{ matrix.image_name }}
+
   finish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs:
-     - make-seccomp-profiles
+      - build
+      - audit
+    if: (${{ needs.audit.result }} == 'success' || ${{ needs.audit.result }} == 'skipped') == 'true' && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
     steps:
       - run: true
     

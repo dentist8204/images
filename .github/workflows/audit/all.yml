@@ -1,0 +1,24 @@
+name: Make All Seccomp Profiles
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  make-seccomp-profiles:
+    permissions:
+      actions: write
+    strategy:
+      matrix:
+        image_name:
+          - "age"
+          - "antlr"
+          - "latex"
+    uses: ./.github/workflows/audit/make-seccomp-profile.yml
+    with:
+      image_name: ${{ matrix.image_name }}
+
