@@ -4,7 +4,7 @@ import subprocess
 import sys
 import time
 
-bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/trace-seccomp-logs.bt"])
+bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/seccomp/trace-logs.bt"])
 
 time.sleep(5)
 
