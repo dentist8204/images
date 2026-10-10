@@ -38,9 +38,8 @@ jobs:
         echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subuid
         echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subgid
         sudo cp -r environments /home/${{ env.USERNAME }}
-        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/environments
         sudo cp -r config /home/${{ env.USERNAME }}
-        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}/config
+        sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home
         sudo loginctl enable-linger ${{ env.USERNAME }}
     - name: Run Scripts
       run: |
