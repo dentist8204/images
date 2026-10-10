@@ -49,7 +49,7 @@ jobs:
     needs:
       - check-paths
       - build
-    if: ${{ needs.check-paths.outputs.audit  == 'true' && (needs.build.result == 'success' || needs.build.result  == 'skipped') }}
+    if: ${{ needs.check-paths.outputs.audit  == 'true' && !failure() && !cancelled() }}
     permissions:
       actions: write
     uses: ./.github/workflows/make-all-seccomp-profiles.yml
