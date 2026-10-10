@@ -9,16 +9,31 @@ on:
      - opened
      - reopened
      - synchronize
-    paths-ignore:
-     - .github/dependabot.yml
-     - LICENSE
-     - README.md
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
+  check-paths:
+    runs-on: ubuntu-26.04
+    outputs:
+      build: ${{ steps.filter.outputs.build }}
+      audit: ${{ steps.filter.outputs.audit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+        filters: |
+          build:
+            - .github/workflows/build/**
+            - 'contexts/**'
+          audit:
+            - .github/workflows/audit/**
+            - 'config/seccomp/**'
+            - 'environments/**'
+            - 'scripts/seccomp/**'
   base:
     permissions:
       contents: read
