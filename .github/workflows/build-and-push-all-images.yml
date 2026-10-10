@@ -1,21 +1,19 @@
-name: All
+name: Build and Push All Images
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches:
-     - main
-    types:
-     - opened
-     - reopened
-     - synchronize
-    paths-ignore:
-     - .github/dependabot.yml
-     - LICENSE
-     - README.md
+    inputs:
+      push:
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      push:
+        type: boolean
+        default: false
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  group: build-and-push-all-images-${{ github.event_name }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -28,6 +26,8 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: "base"
+      push: ${{ inputs.push }}
+
   derivatives:
     needs: base
     permissions:
@@ -43,6 +43,8 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: ${{ matrix.image_name }}
+      push: ${{ inputs.push }}
+
   antlr:
     permissions:
       contents: read
@@ -52,25 +54,4 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: "antlr"
-  make-seccomp-profiles:
-    needs:
-     - antlr
-     - derivatives
-    permissions:
-      actions: write
-    strategy:
-      matrix:
-        image_name:
-          - "age"
-          - "antlr"
-          - "latex"
-    uses: ./.github/workflows/make-seccomp-profile.yml
-    with:
-      image_name: ${{ matrix.image_name }}
-  finish:
-    runs-on: ubuntu-latest
-    needs:
-     - make-seccomp-profiles
-    steps:
-      - run: true
-    
+      push: ${{ inputs.push }}

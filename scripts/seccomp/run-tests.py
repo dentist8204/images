@@ -4,7 +4,7 @@ import subprocess
 import sys
 import time
 
-bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/trace-seccomp-logs.bt"])
+bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/seccomp/trace-logs.bt"])
 
 time.sleep(5)
 
@@ -15,7 +15,7 @@ if bpftrace_exit_code is not None and bpftrace_exit_code != 0:
 
 image_name = sys.argv[1]
 
-with open(f"contexts/{image_name}/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_file:
+with open(f"tests/{image_name}/seccomp.json", "r", encoding="utf-8") as seccomp_tests_file:
   seccomp_tests = json.load(seccomp_tests_file)
 
 username      = sys.argv[3]
@@ -31,7 +31,7 @@ for i in range(0, len(seccomp_tests)):
   create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
                     "--workdir=/home/inner-user/entry", f"--name={container_name}",
                     "--userns=keep-id:uid=1007,gid=1007",
-                    f"--security-opt=seccomp=/home/{username}/config/default-docker-log-seccomp.json",
+                    f"--security-opt=seccomp=/home/{username}/config/seccomp/default-docker-logged.json",
                     f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
                     f"{sys.argv[2]}/{image_name}:latest"]
   start_command  = ["podman", "start", container_name]

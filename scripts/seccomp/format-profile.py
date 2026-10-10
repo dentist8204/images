@@ -16,7 +16,7 @@ seccomp_profile = {
   ]
 }
 
-with open("config/seccomp-baseline.json", "r", encoding="utf-8") as baseline_file:
+with open("config/seccomp/baseline.json", "r", encoding="utf-8") as baseline_file:
   baseline = json.load(baseline_file)
 
 allowed_names = set()
@@ -27,12 +27,12 @@ for category in baseline:
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
   input = input_file.read()
 
-with open("config/seccomp-clusters.json", "r", encoding="utf-8") as clusters_file:
+with open("config/seccomp/clusters.json", "r", encoding="utf-8") as clusters_file:
   temp            = json.load(clusters_file)
   clusters        = temp["clusters"]
   cluster_mapping = temp["mapping"]
 
-with open("config/seccomp-replacements.json", "r", encoding="utf-8") as replacements_file:
+with open("config/seccomp/replacements.json", "r", encoding="utf-8") as replacements_file:
   replacements = json.load(replacements_file)
 
 allowed_ids = set(re.findall(r"@\[(\d+)\]", input))
@@ -50,7 +50,7 @@ for id in allowed_ids:
   else:
     allowed_names.add(name)
 
-with open("config/seccomp-swaps.json", "r", encoding="utf-8") as swaps_file:
+with open("config/seccomp/swaps.json", "r", encoding="utf-8") as swaps_file:
   swaps = json.load(swaps_file)
 
 for name in list(allowed_names):
