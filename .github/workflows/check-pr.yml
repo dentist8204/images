@@ -1,4 +1,4 @@
-name: All
+name: Check Pull Request
 
 on:
   workflow_dispatch:
