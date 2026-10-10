@@ -27,10 +27,12 @@ jobs:
         with:
           filters: |
             build:
-              - '.github/workflows/build/**'
+              - '.github/workflows/build-and-push.yml'
+              - '.github/workflows/build-and-push-all-images.yml'
               - 'contexts/**'
             audit:
-              - '.github/workflows/audit/**'
+              - '.github/workflows/make-seccomp-profile.yml'
+              - '.github/workflows/make-all-seccomp-profiles.yml'
               - 'config/seccomp/**'
               - 'environments/**'
               - 'scripts/seccomp/**'
@@ -43,7 +45,7 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-    uses: ./.github/workflows/build/all.yml
+    uses: ./.github/workflows/build-and-push-all-images.yml
 
   audit:
     needs:
@@ -52,7 +54,7 @@ jobs:
     if: ${{ needs.check-paths.outputs.audit }} == 'true' && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
     permissions:
       actions: write
-    uses: ./.github/workflows/audit/all.yml
+    uses: ./.github/workflows/make-all-seccomp-profiles.yml.yml
 
   finish:
     runs-on: ubuntu-26.04

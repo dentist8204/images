@@ -18,7 +18,7 @@ jobs:
           - "age"
           - "antlr"
           - "latex"
-    uses: ./.github/workflows/audit/make-seccomp-profile.yml
+    uses: ./.github/workflows/make-seccomp-profile.yml
     with:
       image_name: ${{ matrix.image_name }}
 
