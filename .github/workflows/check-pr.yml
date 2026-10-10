@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-     - main
+      - main
     types:
-     - opened
-     - reopened
-     - synchronize
+      - opened
+      - reopened
+      - synchronize
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -52,22 +52,14 @@ jobs:
     if: ${{ needs.check-paths.outputs.audit }} == 'true' && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
     permissions:
       actions: write
-    strategy:
-      matrix:
-        image_name:
-          - "age"
-          - "antlr"
-          - "latex"
     uses: ./.github/workflows/audit/all.yml
-    with:
-      image_name: ${{ matrix.image_name }}
 
   finish:
     runs-on: ubuntu-26.04
     needs:
       - build
       - audit
-    if: (${{ needs.audit.result }} == 'success' || ${{ needs.audit.result }} == 'skipped') == 'true' && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
+    if: (${{ needs.audit.result }} == 'success' || ${{ needs.audit.result }} == 'skipped') && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
     steps:
       - run: true
     
