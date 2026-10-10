@@ -25,15 +25,15 @@ jobs:
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter
         with:
-        filters: |
-          build:
-            - '.github/workflows/build/**'
-            - 'contexts/**'
-          audit:
-            - '.github/workflows/audit/**'
-            - 'config/seccomp/**'
-            - 'environments/**'
-            - 'scripts/seccomp/**'
+          filters: |
+            build:
+              - '.github/workflows/build/**'
+              - 'contexts/**'
+            audit:
+              - '.github/workflows/audit/**'
+              - 'config/seccomp/**'
+              - 'environments/**'
+              - 'scripts/seccomp/**'
 
   build:
     needs: check-paths
