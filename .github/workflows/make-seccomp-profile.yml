@@ -6,7 +6,6 @@ on:
       upload:
         type: boolean
         default: false
-    inputs:
       image_name:
         required: true
         type: choice
@@ -20,7 +19,6 @@ on:
       upload:
         type: boolean
         default: false
-    inputs:
       image_name:
         required: true
         type: string
