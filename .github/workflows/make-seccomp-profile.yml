@@ -46,7 +46,8 @@ jobs:
           echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subuid
           echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subgid
           sudo cp -r environments /home/${{ env.USERNAME }}
-          sudo cp -r config/seccomp /home/${{ env.USERNAME }}
+          sudo mkdir -p /home/${{ env.USERNAME }}/config
+          sudo cp -r config/seccomp /home/${{ env.USERNAME }}/config
           sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}
           sudo loginctl enable-linger ${{ env.USERNAME }}
       - name: Run Scripts
