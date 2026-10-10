@@ -46,12 +46,12 @@ jobs:
       id-token: write
       attestations: write
     uses: ./.github/workflows/build-and-push-all-images.yml
+    with:
+      push: false
 
   audit:
-    needs:
-      - check-paths
-      - build
-    if: ${{ needs.check-paths.outputs.audit  == 'true' && (needs.build.result == 'success' || needs.build.result == 'skipped') }}
+    needs: check-paths
+    if: ${{ needs.check-paths.outputs.audit  == 'true' }}
     permissions:
       actions: write
     uses: ./.github/workflows/make-all-seccomp-profiles.yml

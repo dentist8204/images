@@ -2,7 +2,13 @@ name: Build and Push All Images
 
 on:
   workflow_dispatch:
+    push:
+      type: boolean
+      default: false
   workflow_call:
+    push:
+      type: boolean
+      default: false
 
 concurrency:
   group: build-and-push-all-images-${{ github.ref || github.run_id }}
@@ -18,6 +24,7 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: "base"
+      push: ${{ inputs.push }}
 
   derivatives:
     needs: base
@@ -34,6 +41,7 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: ${{ matrix.image_name }}
+      push: ${{ inputs.push }}
 
   antlr:
     permissions:
@@ -44,3 +52,4 @@ jobs:
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: "antlr"
+      push: ${{ inputs.push }}
