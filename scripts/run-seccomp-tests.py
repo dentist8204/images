@@ -15,7 +15,7 @@ if bpftrace_exit_code is not None and bpftrace_exit_code != 0:
 
 image_name = sys.argv[1]
 
-with open(f"contexts/{image_name}/seccomp-tests.json", "r", encoding="utf-8") as seccomp_tests_file:
+with open(f"tests/{image_name}/seccomp.json", "r", encoding="utf-8") as seccomp_tests_file:
   seccomp_tests = json.load(seccomp_tests_file)
 
 username      = sys.argv[3]
