@@ -4,7 +4,7 @@ environments/** linguist-vendored
 .github/** linguist-vendored=false
 .github/** linguist-documentation=false
 
-config/default-docker-log-seccomp.json linguist-vendored
+config/seccomp/default-docker-logged.json linguist-vendored
 
 *.yml linguist-detectable=true
 *.yml linguist-language=YAML
