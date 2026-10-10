@@ -63,7 +63,7 @@ jobs:
     needs:
       - build
       - audit
-    if: !failure() && !cancelled()
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - run: true
     
