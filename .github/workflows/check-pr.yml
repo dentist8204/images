@@ -27,10 +27,10 @@ jobs:
         with:
         filters: |
           build:
-            - .github/workflows/build/**
+            - '.github/workflows/build/**'
             - 'contexts/**'
           audit:
-            - .github/workflows/audit/**
+            - '.github/workflows/audit/**'
             - 'config/seccomp/**'
             - 'environments/**'
             - 'scripts/seccomp/**'
