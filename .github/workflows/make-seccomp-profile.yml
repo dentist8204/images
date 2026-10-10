@@ -24,7 +24,7 @@ on:
         type: string
 
 concurrency:
-  group: make-seccomp-profile-${{ github.ref || github.run_id }}-${{ inputs.image_name }}
+  group: make-seccomp-profile-${{ github.event_name }}-${{ github.ref || github.run_id }}-${{ inputs.image_name }}
   cancel-in-progress: true
 
 env:

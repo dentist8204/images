@@ -13,7 +13,7 @@ on:
         default: false
 
 concurrency:
-  group: build-and-push-all-images-${{ github.ref || github.run_id }}
+  group: build-and-push-all-images-${{ github.event_name }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
