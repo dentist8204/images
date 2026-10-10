@@ -54,7 +54,7 @@ jobs:
     if: ${{ needs.check-paths.outputs.audit }} == 'true' && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
     permissions:
       actions: write
-    uses: ./.github/workflows/make-all-seccomp-profiles.yml.yml
+    uses: ./.github/workflows/make-all-seccomp-profiles.yml
 
   finish:
     runs-on: ubuntu-26.04
