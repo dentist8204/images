@@ -2,13 +2,15 @@ name: Build and Push All Images
 
 on:
   workflow_dispatch:
-    push:
-      type: boolean
-      default: false
+    inputs:
+      push:
+        type: boolean
+        default: false
   workflow_call:
-    push:
-      type: boolean
-      default: false
+    inputs:
+      push:
+        type: boolean
+        default: false
 
 concurrency:
   group: build-and-push-all-images-${{ github.ref || github.run_id }}
