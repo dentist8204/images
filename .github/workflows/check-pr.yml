@@ -63,7 +63,7 @@ jobs:
     needs:
       - build
       - audit
-    if: ${{ (needs.audit.result == 'success' || needs.audit.result == 'skipped') && (needs.build.result == 'success' || needs.build.result  == 'skipped') }}
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - run: true
     
