@@ -39,7 +39,7 @@ jobs:
 
   build:
     needs: check-paths
-    if: ${{ needs.check-paths.outputs.build }} == 'true'
+    if: ${{ needs.check-paths.outputs.build == 'true' }}
     permissions:
       contents: read
       packages: write
@@ -51,7 +51,7 @@ jobs:
     needs:
       - check-paths
       - build
-    if: ${{ needs.check-paths.outputs.audit }} == 'true' && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
+    if: ${{ needs.check-paths.outputs.audit  == 'true' && (needs.build.result == 'success' || needs.build.result == 'skipped') }}
     permissions:
       actions: write
     uses: ./.github/workflows/make-all-seccomp-profiles.yml
@@ -61,7 +61,7 @@ jobs:
     needs:
       - build
       - audit
-    if: (${{ needs.audit.result }} == 'success' || ${{ needs.audit.result }} == 'skipped') && (${{ needs.build.result }} == 'success' || ${{ needs.build.result }} == 'skipped')
+    if: ${{ (needs.audit.result == 'success' || needs.audit.result == 'skipped') && (needs.build.result == 'success' || needs.build.result  == 'skipped') }}
     steps:
       - run: true
     
