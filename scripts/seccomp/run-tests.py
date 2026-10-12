@@ -29,10 +29,11 @@ for i in range(0, len(seccomp_tests)):
   container_name = f"container_name_{i}"
   
   create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
-                    "--workdir=/home/inner-user/entry", f"--name={container_name}",
+                    "--workdir=/mnt/workspace/entry", f"--name={container_name}",
                     "--userns=keep-id:uid=1007,gid=1007",
+                    "--env=HOME=/mnt/workspace",
                     f"--security-opt=seccomp=/home/{username}/config/seccomp/default-docker-logged.json",
-                    f"--volume=/home/{username}/environments/{image_name}:/home/inner-user",
+                    f"--volume=/home/{username}/environments/{image_name}:/mnt/workspace",
                     f"{sys.argv[2]}/{image_name}:latest"]
   start_command  = ["podman", "start", container_name]
   logs_command   = ["timeout", "60s",

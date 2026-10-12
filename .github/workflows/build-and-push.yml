@@ -12,7 +12,6 @@ on:
         options:
           - "age"
           - "antlr"
-          - "base"
           - "latex"
 
   workflow_call:

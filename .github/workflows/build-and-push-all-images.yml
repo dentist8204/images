@@ -17,19 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  base:
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-      attestations: write
-    uses: ./.github/workflows/build-and-push.yml
-    with:
-      image_name: "base"
-      push: ${{ inputs.push }}
-
-  derivatives:
-    needs: base
+  build-and-push-all-images:
     permissions:
       contents: read
       packages: write
@@ -39,19 +27,9 @@ jobs:
       matrix:
         image_name:
           - "age"
+          - "antlr"
           - "latex"
     uses: ./.github/workflows/build-and-push.yml
     with:
       image_name: ${{ matrix.image_name }}
-      push: ${{ inputs.push }}
-
-  antlr:
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-      attestations: write
-    uses: ./.github/workflows/build-and-push.yml
-    with:
-      image_name: "antlr"
       push: ${{ inputs.push }}
