@@ -97,5 +97,5 @@ jobs:
           python3 scripts/seccomp/run-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }} ${{ steps.build-push.outputs.digest }}
           python3 scripts/seccomp/format-profile.py
       - name: Upload and Sign the Seccomp Profile
-      - if: ${{ inputs.push }}
+        if: ${{ inputs.push }}
         run: cosign attest --predicate seccomp-profile.json --type seccomp-profile --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}
