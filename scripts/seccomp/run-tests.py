@@ -26,7 +26,7 @@ sudo_command  = ["sudo", "-u", f"{username}",
                  f"XDG_CACHE_HOME={user_home}/.cache"]
 if len(sys.argv) == 6:
   identifier = f"@{sys.argv[5]}"
-else
+else:
   identifier = ":latest"
 
 for i in range(0, len(seccomp_tests)):
