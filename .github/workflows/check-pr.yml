@@ -22,7 +22,6 @@ concurrency:
 
 jobs:
   build-all:
-    needs:
     permissions:
       actions: write
       contents: read
