@@ -1,4 +1,5 @@
 version: 2
+
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -12,10 +13,12 @@ updates:
       actions:
         applies-to: "version-updates"
         patterns: [ "*" ]
+
   - package-ecosystem: "docker"
     directories:
+      - "/contexts/age"
       - "/contexts/antlr"
-      - "/contexts/base"
+      - "/contexts/latex"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -24,5 +27,4 @@ updates:
       default-days: 5
     groups:
       images:
-        applies-to: "version-updates"
         patterns: [ "*" ]
