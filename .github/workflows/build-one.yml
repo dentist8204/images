@@ -41,7 +41,6 @@ jobs:
     runs-on: ubuntu-26.04
     if: ${{ needs.check-paths.outputs.build == 'true' }}
     permissions:
-      actions: write
       contents: read
       packages: write
       id-token: write
