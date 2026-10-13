@@ -1,0 +1,28 @@
+name: On Push
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-*.yml'
+      - 'config/seccomp/**'
+      - 'contexts/**'
+      - 'environments/**'
+      - 'scripts/seccomp/**'
+
+concurrency:
+  group: on-push-${{ github.event_name }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build-all:
+    permissions:
+      actions: write
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/build-all.yml
+    with:
+      push: true

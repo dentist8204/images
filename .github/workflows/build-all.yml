@@ -1,33 +1,35 @@
-name: Make All Seccomp Profiles
+name: Build All
 
 on:
   workflow_dispatch:
     inputs:
-      upload:
+      push:
         type: boolean
         default: false
   workflow_call:
     inputs:
-      upload:
+      push:
         type: boolean
         default: false
 
 concurrency:
-  group: make-all-seccomp-profiles-${{ github.event_name }}-${{ github.ref || github.run_id }}
+  group: build-and-push-all-images-${{ github.event_name }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  make-seccomp-profiles:
+  build-all:
     permissions:
       actions: write
+      contents: read
+      packages: write
+      id-token: write
     strategy:
       matrix:
         image_name:
           - "age"
           - "antlr"
           - "latex"
-    uses: ./.github/workflows/make-seccomp-profile.yml
+    uses: ./.github/workflows/build-one.yml
     with:
       image_name: ${{ matrix.image_name }}
-      upload: ${{ inputs.upload }}
-
+      push: ${{ inputs.push }}
