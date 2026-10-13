@@ -39,6 +39,7 @@ jobs:
 
   build-one:
     runs-on: ubuntu-26.04
+    needs: check-paths
     if: ${{ needs.check-paths.outputs.build == 'true' }}
     permissions:
       actions: write
