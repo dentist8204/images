@@ -16,7 +16,9 @@ updates:
 
   - package-ecosystem: "docker"
     directories:
-      - "/contexts"
+      - "/contexts/age"
+      - "/contexts/antlr"
+      - "/contexts/latex"
     schedule:
       interval: "weekly"
       day: "monday"
