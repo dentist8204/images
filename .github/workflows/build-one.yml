@@ -98,4 +98,4 @@ jobs:
           python3 scripts/seccomp/format-profile.py
       - name: Upload and Sign the Seccomp Profile
         if: ${{ inputs.push }}
-        run: cosign attest --predicate seccomp-profile.json --type seccomp-profile --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}
+        run: cosign attest --predicate seccomp-profile.json --type https://seccomp-profile.local --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}
