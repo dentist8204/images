@@ -37,12 +37,11 @@ jobs:
               - 'environments/${{ inputs.image_name }}/**'
               - 'scripts/seccomp/**'
 
-  build-one:
+  build:
     runs-on: ubuntu-26.04
     needs: check-paths
     if: ${{ needs.check-paths.outputs.build == 'true' }}
     permissions:
-      actions: write
       contents: read
       packages: write
       id-token: write
@@ -74,7 +73,7 @@ jobs:
           cosign-release: 'v3.0.6'
       - name: Sign the Image
         if: ${{ inputs.push }}
-        run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}:latest@${{ steps.build-push.outputs.digest }}
+        run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}
       - name: Install Packages
         run: |
           set -euo pipefail
@@ -95,13 +94,8 @@ jobs:
       - name: Run Scripts
         run: |
           set -euo pipefail
-          python3 scripts/seccomp/run-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }}
+          python3 scripts/seccomp/run-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }} ${{ steps.build-push.outputs.digest }}
           python3 scripts/seccomp/format-profile.py
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      - name: Upload and Sign the Seccomp Profile
         if: ${{ inputs.push }}
-        with:
-          name: seccomp-${{ inputs.image_name }}
-          path: |
-            syscalls.txt
-            seccomp-profile.json
-
+        run: cosign attest --predicate seccomp-profile.json --type seccomp-profile --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}

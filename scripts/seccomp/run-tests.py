@@ -24,6 +24,10 @@ sudo_command  = ["sudo", "-u", f"{username}",
                  "env", f"XDG_RUNTIME_DIR={sys.argv[4]}", f"HOME={user_home}",
                  f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
                  f"XDG_CACHE_HOME={user_home}/.cache"]
+if len(sys.argv) == 6:
+  identifier = f"@{sys.argv[5]}"
+else:
+  identifier = ":latest"
 
 for i in range(0, len(seccomp_tests)):
   container_name = f"container_name_{i}"
@@ -34,7 +38,7 @@ for i in range(0, len(seccomp_tests)):
                     "--env=HOME=/mnt/workspace",
                     f"--security-opt=seccomp=/home/{username}/config/seccomp/default-docker-logged.json",
                     f"--volume=/home/{username}/environments/{image_name}:/mnt/workspace",
-                    f"{sys.argv[2]}/{image_name}:latest"]
+                    f"{sys.argv[2]}/{image_name}{identifier}"]
   start_command  = ["podman", "start", container_name]
   logs_command   = ["timeout", "60s",
                     "podman", "logs", "-f", container_name]

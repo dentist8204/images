@@ -19,7 +19,6 @@ concurrency:
 jobs:
   build-all:
     permissions:
-      actions: write
       contents: read
       packages: write
       id-token: write
