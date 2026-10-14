@@ -60,36 +60,6 @@
       "comment": "allow AF_INET6 (from include/linux/socket.h)"
     }
   ],
-  "ioctl": [
-    {
-      "names": [
-        "ioctl"
-      ],
-      "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 1,
-      "comment": "disallow to cause failure"
-    }
-  ],
-  "ptrace": [
-    {
-      "names": [
-        "ptrace"
-      ],
-      "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 1,
-      "comment": "disallow to cause failure"
-    }
-  ],
-  "capset": [
-    {
-      "names": [
-        "capset"
-      ],
-      "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 1,
-      "comment": "disallow to cause failure"
-    }
-  ],
   "prctl": [
     {
       "names": [
