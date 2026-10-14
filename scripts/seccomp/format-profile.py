@@ -35,6 +35,9 @@ with open("config/seccomp/clusters.json", "r", encoding="utf-8") as clusters_fil
 with open("config/seccomp/replacements.json", "r", encoding="utf-8") as replacements_file:
   replacements = json.load(replacements_file)
 
+with open("config/seccomp/deny-list.json", "r", encoding="utf-8") as deny_file:
+  denials = json.load(deny_file)
+
 allowed_ids = set(re.findall(r"@\[(\d+)\]", input))
 syscalls    = seccomp_profile["syscalls"]
 
@@ -47,6 +50,13 @@ for id in allowed_ids:
     allowed_names.update(clusters[cluster_mapping[name]])
   elif name in replacements:
     syscalls.extend(replacements[name])
+  elif name in denials:
+    syscalls.append({
+      "names": [name],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "disallow to cause failure"
+    })
   else:
     allowed_names.add(name)
 
@@ -68,6 +78,9 @@ for id, errnoRet in blocked_ids:
   result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
 
   name = result.stdout.strip()
+
+  if name in swaps:
+    name = swaps[name]
   
   syscalls.append({
     "names": [name],
