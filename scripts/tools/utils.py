@@ -17,8 +17,8 @@ def load_settings(container_name):
 
   check_structure("user_settings", user_settings, schema.USER_SETTINGS)
 
-  context_path  = f"{user_settings['context_path']}/{container_name}"
-  settings      = load_json(f"{context_path}/settings.json")
+  context_path = f"{user_settings['context_path']}/{container_name}"
+  settings     = load_json(f"{context_path}/settings.json")
 
   check_structure("settings", settings, schema.SETTINGS)
 
