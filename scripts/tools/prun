@@ -1,0 +1,141 @@
+#!/usr/bin/python3
+
+import os
+import secrets
+import subprocess
+import sys
+
+from errors import AppError, UsageError
+import schema
+import utils
+
+def main():
+  arg_count = len(sys.argv)
+
+  if arg_count < 2:
+    raise UsageError("<container> <action> [args...]")
+
+  container_name                          = sys.argv[1]
+  (user_settings, settings, context_path) = utils.load_settings(container_name)
+
+  if arg_count < 3:
+    raise UsageError(f"{settings["usage"]}")
+
+  for rw_volume in settings["volumes"]["read_write"]:
+    for ro_volume in settings["volumes"]["read_only"]:
+      if ro_volume.startswith(f"{rw_volume}/") or rw_volume.startswith(f"{ro_volume}/") or ro_volume == rw_volume:
+          raise AppError(f"rw: {rw_volume}; ro: {ro_volume} are incompatible")
+
+  specs         = user_settings["specs"]
+  device_bps    = int(specs["disk-bps"] / 8)
+  device_iops   = int(specs["disk-iops"] / 8)
+  device_name   = user_settings["disk_name"]
+  random_suffix = secrets.token_urlsafe(16)
+  container_id  = "prun.id." + random_suffix
+
+  run_args = ["podman", "run", "--rm", f"--workdir={settings["working-dir"]}", f"--name={container_id}",
+              "--cap-drop=all", "--runtime=crun", "--log-driver=none", "--pull=never", "--read-only",
+              "--cpu-period=100000", f"--cpu-quota={int(specs["cpus"] * 25000)}",
+              f"--memory={int(specs["memory"] / 4)}m", "--pids-limit=256",
+              f"--device-read-bps={device_name}:{device_bps}mb",
+              f"--device-write-bps={device_name}:{device_bps}mb",
+              f"--device-read-iops={device_name}:{device_iops}",
+              f"--device-write-iops={device_name}:{device_iops}",
+              "--ulimit=nofile=1024:1024", "--ulimit=locks=1024:1024", "--ulimit=sigpending=1024:1024",
+              "--ulimit=core=0:0", "--ulimit=memlock=0:0", "--ulimit=msgqueue=0:0",
+              "--cgroupns=private", "--ipc=private", "--pid=private", "--uts=private",
+              "--userns=keep-id:uid=1007,gid=1007",
+              "--security-opt=no-new-privileges", f"--security-opt=seccomp={context_path}/seccomp.json"]
+
+  if (settings["network"]):
+    run_args.append("--network=private")
+  else:
+    run_args.append("--network=none")
+
+  for (var, val) in settings["env"].items():
+    utils.check_structure(f"settings.env.{var}", val, schema.ENV)
+
+    run_args.append(f"--env={var}={val}")
+
+  mount_parent = settings["mount-parent"]
+
+  # a safely sized tmpfs with a reasonable inode cap must be provided for proper resource isolation
+  temp_path = f"{user_settings["tmpfs_path"]}/{container_id}"
+
+  for volume in settings["volumes"]["read_write"]:
+    run_args.append(f"--volume={temp_path}/{volume}:{mount_parent}/{volume}:Z,rw,nosuid,nodev")
+
+  sandbox_path = os.path.abspath(f"{user_settings["sandbox_path"]}/{container_name}")
+
+  for volume in settings["volumes"]["read_only"]:
+    run_args.append(f"--volume={sandbox_path}/{volume}:{mount_parent}/{volume}:Z,ro,nosuid,nodev")
+
+  run_args.append(f"{user_settings["registry"]}/{container_name}:latest")
+
+  actions      = settings["actions"]
+  action_name  = sys.argv[2]
+
+  if action_name not in actions:
+    raise UsageError(f"{settings["usage"]}")
+
+  action = actions[action_name]
+
+  utils.check_structure(f"settings.actions.{action_name}", action, schema.ACTION)
+
+  run_args.extend(action["base_args"])
+
+  args_min = action["args_min"] + 3
+  args_max = action["args_max"] + 3
+
+  if arg_count < args_min or (arg_count > args_max and args_max > 2):
+    raise UsageError(f"{container_name} {action["usage"]}")
+
+  run_args.extend(sys.argv[3:])
+
+  try:
+    try:
+      os.mkdir(temp_path, 0o700)
+    except (FileExistsError, FileNotFoundError, NotADirectoryError, PermissionError) as e:
+      raise AppError(e)
+
+    for volume in settings["volumes"]["read_write"]:
+      copy_volume(f"{sandbox_path}/{volume}", f"{temp_path}/{volume}")
+
+    subprocess.run(run_args, check=True)
+
+    result = subprocess.run(["find", temp_path, "-mindepth", "1",
+                            "!", "-type", "f", "!", "-type", "d", "!", "-type", "l",
+                            "-printf", ".", "-quit"], check=True, capture_output=True)
+
+    if len(result.stdout) > 0:
+      raise AppError(f"{container_name} returned weird files")
+
+    for volume in settings["volumes"]["read_write"]:
+      copy_volume(f"{temp_path}/{volume}/.", f"{sandbox_path}/{volume}")
+  except KeyboardInterrupt:
+    raise AppError("Interrupted")
+  except subprocess.CalledProcessError as e:
+    raise AppError(e)
+  finally:
+    subprocess.run(["podman", "stop", container_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["podman", "kill", container_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    if os.path.exists(temp_path):
+      subprocess.run(["find", temp_path, "-delete"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    subprocess.run(["restorecon", "-RF", sandbox_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+def copy_volume(src, dst):
+  os.makedirs(os.path.dirname(dst), exist_ok=True)
+
+  subprocess.run(["cp", "-RPf", src, dst], stdout=subprocess.DEVNULL, check=True)
+
+if __name__ == "__main__":
+  try:
+    main()
+  except AppError as e:
+    print("prun:", e, file=sys.stderr)
+    sys.exit(1)
+  except UsageError as e:
+    print("usage: prun", e, file=sys.stderr)
+    sys.exit(2)
