@@ -19,7 +19,7 @@ def main():
   (user_settings, settings, context_path) = utils.load_settings(container_name)
 
   if arg_count < 3:
-    raise UsageError(f"{settings["usage"]}")
+    raise UsageError(f"{settings['usage']}")
 
   for rw_volume in settings["volumes"]["read_write"]:
     for ro_volume in settings["volumes"]["read_only"]:
@@ -33,10 +33,10 @@ def main():
   random_suffix = secrets.token_urlsafe(16)
   container_id  = "prun.id." + random_suffix
 
-  run_args = ["podman", "run", "--rm", f"--workdir={settings["working-dir"]}", f"--name={container_id}",
+  run_args = ["podman", "run", "--rm", f"--workdir={settings['working-dir']}", f"--name={container_id}",
               "--cap-drop=all", "--runtime=crun", "--log-driver=none", "--pull=never", "--read-only",
-              "--cpu-period=100000", f"--cpu-quota={int(specs["cpus"] * 25000)}",
-              f"--memory={int(specs["memory"] / 4)}m", "--pids-limit=256",
+              "--cpu-period=100000", f"--cpu-quota={int(specs['cpus'] * 25000)}",
+              f"--memory={int(specs['memory'] / 4)}m", "--pids-limit=256",
               f"--device-read-bps={device_name}:{device_bps}mb",
               f"--device-write-bps={device_name}:{device_bps}mb",
               f"--device-read-iops={device_name}:{device_iops}",
@@ -60,23 +60,23 @@ def main():
   mount_parent = settings["mount-parent"]
 
   # a safely sized tmpfs with a reasonable inode cap must be provided for proper resource isolation
-  temp_path = f"{user_settings["tmpfs_path"]}/{container_id}"
+  temp_path = f"{user_settings['tmpfs_path']}/{container_id}"
 
   for volume in settings["volumes"]["read_write"]:
     run_args.append(f"--volume={temp_path}/{volume}:{mount_parent}/{volume}:Z,rw,nosuid,nodev")
 
-  sandbox_path = os.path.abspath(f"{user_settings["sandbox_path"]}/{container_name}")
+  sandbox_path = os.path.abspath(f"{user_settings['sandbox_path']}/{container_name}")
 
   for volume in settings["volumes"]["read_only"]:
     run_args.append(f"--volume={sandbox_path}/{volume}:{mount_parent}/{volume}:Z,ro,nosuid,nodev")
 
-  run_args.append(f"{user_settings["registry"]}/{container_name}:latest")
+  run_args.append(f"{user_settings['registry']}/{container_name}:latest")
 
   actions      = settings["actions"]
   action_name  = sys.argv[2]
 
   if action_name not in actions:
-    raise UsageError(f"{settings["usage"]}")
+    raise UsageError(f"{settings['usage']}")
 
   action = actions[action_name]
 
@@ -88,7 +88,7 @@ def main():
   args_max = action["args_max"] + 3
 
   if arg_count < args_min or (arg_count > args_max and args_max > 2):
-    raise UsageError(f"{container_name} {action["usage"]}")
+    raise UsageError(f"{container_name} {action['usage']}")
 
   run_args.extend(sys.argv[3:])
 

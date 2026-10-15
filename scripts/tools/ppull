@@ -15,12 +15,12 @@ def main():
 
   container_name                          = sys.argv[1]
   (user_settings, settings, context_path) = utils.load_settings(container_name)
-  container_source                        = f"{user_settings["registry"]}/{container_name}"
+  container_source                        = f"{user_settings['registry']}/{container_name}"
 
   try:
     result = subprocess.run(["cosign", "verify",
-                             f"--certificate-identity={user_settings["certificate-identity"]}",
-                             f"--certificate-oidc-issuer={user_settings["certificate-oidc-issuer"]}",
+                             f"--certificate-identity={user_settings['certificate-identity']}",
+                             f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
                              f"{container_source}:latest"], check=True, stdout=subprocess.PIPE, text=True)
 
     output = json.loads(result.stdout)
@@ -37,8 +37,8 @@ def main():
       raise AppError("could not find https://sigstore.dev/cosign/sign/v1 in verify output")
 
     result = subprocess.run(["cosign", "verify-attestation", "--type=https://seccomp-profile.local",
-                             f"--certificate-identity={user_settings["certificate-identity"]}",
-                             f"--certificate-oidc-issuer={user_settings["certificate-oidc-issuer"]}",
+                             f"--certificate-identity={user_settings['certificate-identity']}",
+                             f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
                              f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
                             text=True)
 
@@ -60,9 +60,9 @@ def main():
     raise AppError("pulled seccomp profile is not an allow list")
 
   seccomp_config_path = user_settings["seccomp-config-path"]
-  replacements        = utils.load_json(f"{user_settings["seccomp-config-path"]}/replacements.json")
-  swaps               = utils.load_json(f"{user_settings["seccomp-config-path"]}/swaps.json")
-  denials             = utils.load_json(f"{user_settings["seccomp-config-path"]}/deny-list.json")
+  replacements        = utils.load_json(f"{user_settings['seccomp-config-path']}/replacements.json")
+  swaps               = utils.load_json(f"{user_settings['seccomp-config-path']}/swaps.json")
+  denials             = utils.load_json(f"{user_settings['seccomp-config-path']}/deny-list.json")
 
   for name in seccomp_profile["syscalls"][0]["names"]:
     if name in replacements or name in swaps or name in denials:
