@@ -1,0 +1,102 @@
+#!/usr/bin/python3
+
+import base64
+import json
+import subprocess
+import sys
+
+from errors import AppError, UsageError
+import schema
+import utils
+
+def main():
+  if len(sys.argv) != 2:
+    raise UsageError("<container>")
+
+  container_name                          = sys.argv[1]
+  (user_settings, settings, context_path) = utils.load_settings(container_name)
+  container_source                        = f"{user_settings['registry']}/{container_name}"
+
+  try:
+    result = subprocess.run(["cosign", "verify",
+                             f"--certificate-identity={user_settings['certificate-identity']}",
+                             f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
+                             f"{container_source}:latest"], check=True, stdout=subprocess.PIPE, text=True)
+
+    output = json.loads(result.stdout)
+
+    utils.check_structure("verify_output", output, schema.VERIFY_OUTPUT)
+
+    for i in range(0, len(output)):
+      attachment = output[i]
+
+      if attachment["critical"]["type"] == "https://sigstore.dev/cosign/sign/v1":
+        index_digest = attachment["critical"]["image"]["docker-manifest-digest"]
+        break
+    else:
+      raise AppError("could not find https://sigstore.dev/cosign/sign/v1 in verify output")
+
+    result = subprocess.run(["cosign", "verify-attestation", "--type=https://seccomp-profile.local",
+                             f"--certificate-identity={user_settings['certificate-identity']}",
+                             f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
+                             f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
+                            text=True)
+
+    output = json.loads(result.stdout)
+
+    utils.check_structure("attest_output", output, schema.ATTEST_OUTPUT)
+
+    output = json.loads(base64.b64decode(output["payload"]).decode('utf-8'))
+
+    utils.check_structure("attest_payload", output, schema.ATTEST_PAYLOAD)
+
+    seccomp_profile = output["predicate"]
+  except KeyboardInterrupt:
+    raise AppError("Interrupted")
+  except subprocess.CalledProcessError as e:
+    raise AppError(e)
+
+  if seccomp_profile["defaultAction"] != "SCMP_ACT_ERRNO":
+    raise AppError("pulled seccomp profile is not an allow list")
+
+  seccomp_config_path = user_settings["seccomp-config-path"]
+  replacements        = utils.load_json(f"{user_settings['seccomp-config-path']}/replacements.json")
+  swaps               = utils.load_json(f"{user_settings['seccomp-config-path']}/swaps.json")
+  denials             = utils.load_json(f"{user_settings['seccomp-config-path']}/deny-list.json")
+
+  for name in seccomp_profile["syscalls"][0]["names"]:
+    if name in replacements or name in swaps or name in denials:
+      raise AppError(f"pulled seccomp profile allows denied syscall: {name}")
+
+  for i in range(1, len(seccomp_profile["syscalls"])):
+    entry = seccomp_profile["syscalls"][i]
+    names = entry["names"]
+
+    if len(names) != 1:
+      raise AppError(f"seccomp_profile.syscalls[{i}].names does not contain exactly 1 entry")
+
+    allowed = replacements.get(names[0], [])
+
+    if entry["action"] != "SCMP_ACT_ERRNO" and entry not in allowed:
+      raise AppError(f"seccomp_profile.syscalls[{i}] is not a valid replacement: {entry}")
+
+  try:
+    subprocess.run(["podman", "pull", "--tls-verify", "--policy=always",
+                   f"{container_source}@{index_digest}"], check=True)
+  except KeyboardInterrupt:
+    raise AppError("Interrupted")
+  except subprocess.CalledProcessError as e:
+    raise AppError(e)
+
+  with open(f"{context_path}/seccomp.json", "w", encoding="utf-8") as output_file:
+    json.dump(seccomp_profile, output_file, indent=2)
+
+if __name__ == "__main__":
+  try:
+    main()
+  except AppError as e:
+    print("ppull:", e, file=sys.stderr)
+    sys.exit(1)
+  except UsageError as e:
+    print("usage: ppull", e, file=sys.stderr)
+    sys.exit(2)
