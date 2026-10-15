@@ -35,8 +35,8 @@ with open("config/seccomp/clusters.json", "r", encoding="utf-8") as clusters_fil
 with open("config/seccomp/replacements.json", "r", encoding="utf-8") as replacements_file:
   replacements = json.load(replacements_file)
 
-with open("config/seccomp/deny-list.json", "r", encoding="utf-8") as deny_file:
-  denials = json.load(deny_file)
+with open("config/seccomp/denials.json", "r", encoding="utf-8") as denials_file:
+  denials = json.load(denials_file)
 
 allowed_ids = set(re.findall(r"@\[(\d+)\]", input))
 syscalls    = seccomp_profile["syscalls"]
