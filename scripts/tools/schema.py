@@ -113,3 +113,9 @@ ATTEST_PAYLOAD = {
     ]
   }
 }
+
+REPLACEMENTS = {}
+
+SWAPS = {}
+
+DENIALS = {}
