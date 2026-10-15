@@ -1,11 +1,6 @@
 name: Build All
 
 on:
-  workflow_dispatch:
-    inputs:
-      push:
-        type: boolean
-        default: false
   workflow_call:
     inputs:
       push:
