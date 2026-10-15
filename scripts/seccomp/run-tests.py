@@ -25,7 +25,7 @@ sudo_command = ["sudo", "-u", f"{username}",
                 f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
                 f"XDG_CACHE_HOME={user_home}/.cache"]
 
-if len(sys.argv) == 6:
+if len(sys.argv) > 5:
   identifier = f"@{sys.argv[5]}"
 else:
   identifier = ":latest"
@@ -60,8 +60,8 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(kill_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
   subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
-time.sleep(5)
+time.sleep(1)
 
-subprocess.run(["sudo", "kill", f"{bpftrace.pid}"], check=True)
+subprocess.run(["sudo", "pkill", f"bpftrace"], check=True)
 
-time.sleep(5)
+bpftrace.wait()
