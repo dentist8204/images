@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '.github/workflows/build-*.yml'
-      - 'config/seccomp/**'
-      - 'contexts/**'
-      - 'environments/**'
-      - 'scripts/seccomp/**'
 
 concurrency:
   group: on-push-${{ github.event_name }}-${{ github.ref || github.run_id }}
