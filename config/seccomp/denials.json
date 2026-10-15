@@ -62,5 +62,5 @@
   "get_mempolicy": true,
   "mbind": true,
   "set_mempolicy": true,
-  "set_mempolicy_home_node": true,
+  "set_mempolicy_home_node": true
 }
