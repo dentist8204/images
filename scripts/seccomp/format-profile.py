@@ -23,7 +23,7 @@ with open("config/seccomp/baseline.json", "r", encoding="utf-8") as baseline_fil
     allowed_names.update(category["names"])
 
 with open("syscalls.txt", "r", encoding="utf-8") as input_file:
-  input = input_file.read()
+  input_ = input_file.read()
 
 with open("config/seccomp/clusters.json", "r", encoding="utf-8") as clusters_file:
   temp            = json.load(clusters_file)
@@ -39,11 +39,11 @@ with open("config/seccomp/denials.json", "r", encoding="utf-8") as denials_file:
 with open("config/seccomp/swaps.json", "r", encoding="utf-8") as swaps_file:
   swaps = json.load(swaps_file)
 
-allowed_ids = set(re.findall(r"@\[(\d+)\]", input))
+allowed_ids = set(re.findall(r"@\[(\d+)\]", input_))
 syscalls    = seccomp_profile["syscalls"]
 
-for id in allowed_ids:
-  result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
+for id_ in allowed_ids:
+  result = subprocess.run(["ausyscall", "x86_64", id_], capture_output=True, text=True, check=True)
   
   name = result.stdout.strip()
 
@@ -67,11 +67,11 @@ for id in allowed_ids:
 syscalls[0]["names"] = list(allowed_names)
 syscalls[0]["names"].sort()
 
-blocked_ids = re.findall(r"@error\[(\d+)\]: (\d)", input)
-blocked_ids = [id for id in blocked_ids if id[0] not in allowed_ids]
+blocked_ids = re.findall(r"@error\[(\d+)\]: (\d+)", input_)
+blocked_ids = [id_ for id_ in blocked_ids if id_[0] not in allowed_ids]
 
-for (id, errnoRet) in blocked_ids:
-  result = subprocess.run(["ausyscall", "x86_64", id], capture_output=True, text=True, check=True)
+for (id_, errnoRet) in blocked_ids:
+  result = subprocess.run(["ausyscall", "x86_64", id_], capture_output=True, text=True, check=True)
 
   name = result.stdout.strip()
 

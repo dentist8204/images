@@ -114,8 +114,7 @@ ATTEST_PAYLOAD = {
   }
 }
 
+ALLOWANCE    = {}
+DENIALS      = {}
 REPLACEMENTS = {}
-
-SWAPS = {}
-
-DENIALS = {}
+SWAPS        = {}

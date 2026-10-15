@@ -27,9 +27,7 @@ def main():
 
     utils.check_structure("verify_output", output, schema.VERIFY_OUTPUT)
 
-    for i in range(0, len(output)):
-      attachment = output[i]
-
+    for attachment in output:
       if attachment["critical"]["type"] == "https://sigstore.dev/cosign/sign/v1":
         index_digest = attachment["critical"]["image"]["docker-manifest-digest"]
         break
@@ -60,15 +58,18 @@ def main():
     raise AppError("pulled seccomp profile is not an allow list")
 
   seccomp_config_path = user_settings["seccomp-config-path"]
+  allowance           = utils.load_json("allowance", f"{seccomp_config_path}/allowance.json",
+                                        schema.ALLOWANCE)
+  denials             = utils.load_json("denials", f"{seccomp_config_path}/denials.json",
+                                        schema.DENIALS)
   replacements        = utils.load_json("replacements", f"{seccomp_config_path}/replacements.json",
                                         schema.REPLACEMENTS)
   swaps               = utils.load_json("swaps", f"{seccomp_config_path}/swaps.json",
                                         schema.SWAPS)
-  denials             = utils.load_json("denials", f"{seccomp_config_path}/denials.json",
-                                        schema.DENIALS)
+
 
   for name in seccomp_profile["syscalls"][0]["names"]:
-    if name in replacements or name in swaps or name in denials:
+    if (name not in allowance) or (name in replacements) or (name in denials):
       raise AppError(f"pulled seccomp profile allows denied syscall: {name}")
 
   for i in range(1, len(seccomp_profile["syscalls"])):
