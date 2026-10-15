@@ -18,12 +18,13 @@ image_name = sys.argv[1]
 with open(f"tests/{image_name}/seccomp.json", "r", encoding="utf-8") as seccomp_tests_file:
   seccomp_tests = json.load(seccomp_tests_file)
 
-username      = sys.argv[3]
-user_home     = f"/home/{username}"
-sudo_command  = ["sudo", "-u", f"{username}",
-                 "env", f"XDG_RUNTIME_DIR={sys.argv[4]}", f"HOME={user_home}",
-                 f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
-                 f"XDG_CACHE_HOME={user_home}/.cache"]
+username     = sys.argv[3]
+user_home    = f"/home/{username}"
+sudo_command = ["sudo", "-u", f"{username}",
+                "env", f"XDG_RUNTIME_DIR={sys.argv[4]}", f"HOME={user_home}",
+                f"XDG_CONFIG_HOME={user_home}/.config", f"XDG_DATA_HOME={user_home}/.local/share",
+                f"XDG_CACHE_HOME={user_home}/.cache"]
+
 if len(sys.argv) == 6:
   identifier = f"@{sys.argv[5]}"
 else:

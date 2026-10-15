@@ -13,21 +13,21 @@ def load_settings(container_name):
   elif findall(r"[^a-zA-Z0-9-_]", container_name):
     raise AppError("container name has invalid characters")
 
-  user_settings = load_json(f"{Path.home()}/.config/prun/settings.json")
-
-  check_structure("user_settings", user_settings, schema.USER_SETTINGS)
-
+  user_settings = load_json("user_settings", f"{Path.home()}/.config/prun/settings.json",
+                            schema.USER_SETTINGS)
   context_path  = f"{user_settings['context_path']}/{container_name}"
-  settings      = load_json(f"{context_path}/settings.json")
-
-  check_structure("settings", settings, schema.SETTINGS)
+  settings      = load_json("settings", f"{context_path}/settings.json", schema.SETTINGS)
 
   return (user_settings, settings, context_path)
 
-def load_json(file_path):
+def load_json(name, file_path, schema_):
   try:
     with open(file_path, "r", encoding="utf-8") as file_:
-      return json.load(file_)
+      json_data = json.load(file_)
+
+      check_structure(name, json_data, schema_)
+
+      return json_data
   except (FileNotFoundError, IsADirectoryError, NotADirectoryError, PermissionError) as e:
     raise AppError(e)
 

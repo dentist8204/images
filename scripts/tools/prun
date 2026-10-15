@@ -72,8 +72,8 @@ def main():
 
   run_args.append(f"{user_settings['registry']}/{container_name}:latest")
 
-  actions      = settings["actions"]
-  action_name  = sys.argv[2]
+  actions     = settings["actions"]
+  action_name = sys.argv[2]
 
   if action_name not in actions:
     raise UsageError(f"{settings['usage']}")
@@ -104,8 +104,8 @@ def main():
     subprocess.run(run_args, check=True)
 
     result = subprocess.run(["find", temp_path, "-mindepth", "1",
-                            "!", "-type", "f", "!", "-type", "d", "!", "-type", "l",
-                            "-printf", ".", "-quit"], check=True, capture_output=True)
+                             "!", "-type", "f", "!", "-type", "d", "!", "-type", "l",
+                             "-printf", ".", "-quit"], check=True, capture_output=True)
 
     if len(result.stdout) > 0:
       raise AppError(f"{container_name} returned weird files")

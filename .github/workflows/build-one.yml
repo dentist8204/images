@@ -11,7 +11,7 @@ on:
         default: false
 
 concurrency:
-  group: build-and-push-${{ github.event_name }}-${{ github.ref || github.run_id }}-${{ inputs.image_name }}
+  group: build-one-${{ github.event_name }}-${{ github.ref || github.run_id }}-${{ inputs.image_name }}
   cancel-in-progress: true
 
 env:

@@ -39,7 +39,7 @@ def main():
     result = subprocess.run(["cosign", "verify-attestation", "--type=https://seccomp-profile.local",
                              f"--certificate-identity={user_settings['certificate-identity']}",
                              f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
-                             f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
+                             f"{container_source}:latest@{index_digest}"], check=True, stdout=subprocess.PIPE,
                             text=True)
 
     output = json.loads(result.stdout)
@@ -60,9 +60,12 @@ def main():
     raise AppError("pulled seccomp profile is not an allow list")
 
   seccomp_config_path = user_settings["seccomp-config-path"]
-  replacements        = utils.load_json(f"{user_settings['seccomp-config-path']}/replacements.json")
-  swaps               = utils.load_json(f"{user_settings['seccomp-config-path']}/swaps.json")
-  denials             = utils.load_json(f"{user_settings['seccomp-config-path']}/denials.json")
+  replacements        = utils.load_json("replacements", f"{seccomp_config_path}/replacements.json",
+                                        schema.REPLACEMENTS)
+  swaps               = utils.load_json("swaps", f"{seccomp_config_path}/swaps.json",
+                                        schema.SWAPS)
+  denials             = utils.load_json("denials", f"{seccomp_config_path}/denials.json",
+                                        schema.DENIALS)
 
   for name in seccomp_profile["syscalls"][0]["names"]:
     if name in replacements or name in swaps or name in denials:
@@ -82,7 +85,7 @@ def main():
 
   try:
     subprocess.run(["podman", "pull", "--tls-verify", "--policy=always",
-                   f"{container_source}@{index_digest}"], check=True)
+                   f"{container_source}:latest@{index_digest}"], check=True)
   except KeyboardInterrupt:
     raise AppError("Interrupted")
   except subprocess.CalledProcessError as e:

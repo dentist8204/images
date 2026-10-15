@@ -1,18 +1,18 @@
 {
   "clusters": [
     [ "read", "readv" ],
-    [ "pread", "preadv" ],
+    [ "pread64", "preadv" ],
     [ "write", "writev" ],
-    [ "pwrite", "pwritev" ]
+    [ "pwrite64", "pwritev" ]
   ],
   "mapping": {
     "read": 0,
     "readv": 0,
-    "pread": 1,
+    "pread64": 1,
     "preadv": 1,
     "write": 2,
     "writev": 2,
-    "pwrite": 3,
+    "pwrite64": 3,
     "pwritev": 3
   }
 }
