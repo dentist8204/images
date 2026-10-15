@@ -1,7 +1,0 @@
-{
-  "capset": true,
-  "ioctl": true,
-  "ipc": true,
-  "ptrace": true,
-  "socketcall": true
-}

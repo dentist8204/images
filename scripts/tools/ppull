@@ -62,7 +62,7 @@ def main():
   seccomp_config_path = user_settings["seccomp-config-path"]
   replacements        = utils.load_json(f"{user_settings['seccomp-config-path']}/replacements.json")
   swaps               = utils.load_json(f"{user_settings['seccomp-config-path']}/swaps.json")
-  denials             = utils.load_json(f"{user_settings['seccomp-config-path']}/deny-list.json")
+  denials             = utils.load_json(f"{user_settings['seccomp-config-path']}/denials.json")
 
   for name in seccomp_profile["syscalls"][0]["names"]:
     if name in replacements or name in swaps or name in denials:

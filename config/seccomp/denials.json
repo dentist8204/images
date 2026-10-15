@@ -1,0 +1,66 @@
+{
+  "capset": true,
+  "ioctl": true,
+  "ipc": true,
+  "socketcall": true,
+
+  "open_by_handle_at": true,
+
+  "bpf": true,
+  "clone3": true,
+  "fanotify_init": true,
+  "fsconfig": true,
+  "fsmount": true,
+  "fsopen": true,
+  "fspick": true,
+  "lookup_dcookie": true,
+  "lsm_get_self_attr": true,
+  "lsm_list_modules": true,
+  "lsm_set_self_attr": true,
+  "mount": true,
+  "mount_setattr": true,
+  "move_mount": true,
+  "open_tree": true,
+  "perf_event_open": true,
+  "quotactl": true,
+  "quotactl_fd": true,
+  "setdomainname": true,
+  "sethostname": true,
+  "setns": true,
+  "syslog": true,
+  "umount": true,
+  "umount2": true,
+  "unshare": true,
+
+  "reboot": true,
+
+  "chroot": true,
+
+  "delete_module": true,
+  "init_module": true,
+  "finit_module": true,
+
+  "acct": true,
+
+  "kcmp": true,
+  "pidfd_getfd": true,
+  "process_madvise": true,
+  "process_vm_readv": true,
+  "process_vm_writev": true,
+  "ptrace": true,
+
+  "iopl": true,
+  "ioperm": true,
+
+  "settimeofday": true,
+  "stime": true,
+  "clock_settime": true,
+  "clock_settime64": true,
+
+  "vhangup": true,
+
+  "get_mempolicy": true,
+  "mbind": true,
+  "set_mempolicy": true,
+  "set_mempolicy_home_node": true
+}
