@@ -99,7 +99,7 @@ all_names = allowed_names | blocked_names
 
 with open("config/seccomp/baseline-replacements.json", "r", encoding="utf-8") as baseline_replacements_file:
   for (name, value) in json.load(baseline_replacements_file).items():
-    if name not in all_names
+    if name not in all_names:
         syscalls.append({
           "names": [name],
           "action": "SCMP_ACT_ERRNO",
