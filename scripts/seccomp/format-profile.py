@@ -17,6 +17,7 @@ seccomp_profile = {
 }
 
 allowed_names = set()
+blocked_names = set()
 
 with open("config/seccomp/baseline.json", "r", encoding="utf-8") as baseline_file:
   for category in json.load(baseline_file):
@@ -33,8 +34,11 @@ with open("config/seccomp/clusters.json", "r", encoding="utf-8") as clusters_fil
 with open("config/seccomp/replacements.json", "r", encoding="utf-8") as replacements_file:
   replacements = json.load(replacements_file)
 
-with open("config/seccomp/denials.json", "r", encoding="utf-8") as denials_file:
-  denials = json.load(denials_file)
+with open("config/seccomp/allowance.json", "r", encoding="utf-8") as allowance_file:
+  with open("config/seccomp/denials.json", "r", encoding="utf-8") as denials_file:
+    allowance  = set(json.load(allowance_file)
+    allowance -= json.load(denials_file)
+    allowance -= replacements
 
 with open("config/seccomp/swaps.json", "r", encoding="utf-8") as swaps_file:
   swaps = json.load(swaps_file)
@@ -54,13 +58,17 @@ for id_ in allowed_ids:
     allowed_names.update(clusters[cluster_mapping[name]])
   elif name in replacements:
     syscalls.extend(replacements[name])
-  elif name in denials:
+
+    blocked_names.add(name)
+  elif name not in allowance:
     syscalls.append({
       "names": [name],
       "action": "SCMP_ACT_ERRNO",
       "errnoRet": 1,
       "comment": "disallow to cause failure"
     })
+
+    blocked_names.add(name)
   else:
     allowed_names.add(name)
 
@@ -77,6 +85,8 @@ for (id_, errnoRet) in blocked_ids:
 
   if name in swaps:
     name = swaps[name]
+
+  blocked_names.add(name)
   
   syscalls.append({
     "names": [name],
@@ -84,6 +94,18 @@ for (id_, errnoRet) in blocked_ids:
     "errnoRet": int(errnoRet),
     "comment": "disallow because it returned this errno while being logged"
   })
+
+all_names = allowed_names | blocked_names
+
+with open("config/seccomp/baseline-replacements.json", "r", encoding="utf-8") as baseline_replacements_file:
+  for (name, value) in json.load(baseline_replacements_file).items():
+    if name not in all_names
+        syscalls.append({
+          "names": [name],
+          "action": "SCMP_ACT_ERRNO",
+          "errnoRet": value["errnoRet"],
+          "comment": value["comment"]
+        })
 
 with open("seccomp-profile.json", "w", encoding="utf-8") as output_file:
   json.dump(seccomp_profile, output_file, indent=2)
