@@ -37,8 +37,8 @@ with open("config/seccomp/replacements.json", "r", encoding="utf-8") as replacem
 with open("config/seccomp/allowance.json", "r", encoding="utf-8") as allowance_file:
   with open("config/seccomp/denials.json", "r", encoding="utf-8") as denials_file:
     allowance  = set(json.load(allowance_file))
-    allowance -= json.load(denials_file)
-    allowance -= replacements
+    allowance -= set(json.load(denials_file))
+    allowance -= set(replacements)
 
 with open("config/seccomp/swaps.json", "r", encoding="utf-8") as swaps_file:
   swaps = json.load(swaps_file)

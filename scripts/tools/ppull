@@ -63,8 +63,8 @@ def main():
                                  schema.A_DICT)
 
   allowance  = set(utils.load_json("allowance", f"{seccomp_config_path}/allowance.json", schema.A_DICT))
-  allowance -= utils.load_json("denials", f"{seccomp_config_path}/denials.json", schema.A_DICT)
-  allowance -= replacements
+  allowance -= set(utils.load_json("denials", f"{seccomp_config_path}/denials.json", schema.A_DICT))
+  allowance -= set(replacements)
 
   for name in seccomp_profile["syscalls"][0]["names"]:
     if name not in allowance:
