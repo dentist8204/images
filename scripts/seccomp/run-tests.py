@@ -62,6 +62,6 @@ for i in range(0, len(seccomp_tests)):
 
 time.sleep(1)
 
-subprocess.run(["sudo", "pkill", f"bpftrace"], check=True)
+subprocess.run(["sudo", "pkill", "-INT", "bpftrace"], check=True)
 
 bpftrace.wait()
