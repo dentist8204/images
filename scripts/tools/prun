@@ -10,16 +10,11 @@ import schema
 import utils
 
 def main():
-  arg_count = len(sys.argv)
-
-  if arg_count < 2:
-    raise UsageError("<container> <action> [args...]")
+  if len(sys.argv) < 3:
+    raise UsageError("<container> <command> [args...]")
 
   container_name                          = sys.argv[1]
   (user_settings, settings, context_path) = utils.load_settings(container_name)
-
-  if arg_count < 3:
-    raise UsageError(f"{settings['usage']}")
 
   for rw_volume in settings["volumes"]["read_write"]:
     for ro_volume in settings["volumes"]["read_only"]:
@@ -71,26 +66,7 @@ def main():
     run_args.append(f"--volume={sandbox_path}/{volume}:{mount_parent}/{volume}:Z,ro,nosuid,nodev")
 
   run_args.append(f"{user_settings['registry']}/{container_name}:latest")
-
-  actions     = settings["actions"]
-  action_name = sys.argv[2]
-
-  if action_name not in actions:
-    raise UsageError(f"{settings['usage']}")
-
-  action = actions[action_name]
-
-  utils.check_structure(f"settings.actions.{action_name}", action, schema.ACTION)
-
-  run_args.extend(action["base_args"])
-
-  args_min = action["args_min"] + 3
-  args_max = action["args_max"] + 3
-
-  if arg_count < args_min or (arg_count > args_max and args_max > 2):
-    raise UsageError(f"{container_name} {action['usage']}")
-
-  run_args.extend(sys.argv[3:])
+  run_args.extend(sys.argv[2:])
 
   try:
     try:
