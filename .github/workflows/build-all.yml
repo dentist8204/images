@@ -1,11 +1,16 @@
 name: Build All
 
 on:
-  workflow_call:
-    inputs:
-      push:
-        type: boolean
-        default: false
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 concurrency:
   group: build-all-${{ github.event_name }}-${{ github.ref || github.run_id }}
@@ -26,4 +31,11 @@ jobs:
     uses: ./.github/workflows/build-one.yml
     with:
       image_name: ${{ matrix.image_name }}
-      push: ${{ inputs.push }}
+      push: ${{ github.event_name == 'push' }}
+
+  finish:
+    runs-on: ubuntu-26.04
+    if: ${{ github.event_name == 'pull_request' }}
+    needs: build-all
+    steps:
+      - run: true
