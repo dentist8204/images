@@ -114,7 +114,4 @@ ATTEST_PAYLOAD = {
   }
 }
 
-ALLOWANCE    = {}
-DENIALS      = {}
-REPLACEMENTS = {}
-SWAPS        = {}
+A_DICT = {}

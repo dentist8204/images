@@ -58,28 +58,21 @@ def main():
     raise AppError("pulled seccomp profile is not an allow list")
 
   seccomp_config_path = user_settings["seccomp-config-path"]
-  allowance           = utils.load_json("allowance", f"{seccomp_config_path}/allowance.json",
-                                        schema.ALLOWANCE)
-  denials             = utils.load_json("denials", f"{seccomp_config_path}/denials.json",
-                                        schema.DENIALS)
-  replacements        = utils.load_json("replacements", f"{seccomp_config_path}/replacements.json",
-                                        schema.REPLACEMENTS)
-  swaps               = utils.load_json("swaps", f"{seccomp_config_path}/swaps.json",
-                                        schema.SWAPS)
 
+  replacements = utils.load_json("replacements", f"{seccomp_config_path}/replacements.json",
+                                 schema.A_DICT)
+
+  allowance  = set(utils.load_json("allowance", f"{seccomp_config_path}/allowance.json", schema.A_DICT))
+  allowance -= set(utils.load_json("denials", f"{seccomp_config_path}/denials.json", schema.A_DICT))
+  allowance -= set(replacements)
 
   for name in seccomp_profile["syscalls"][0]["names"]:
-    if (name not in allowance) or (name in replacements) or (name in denials):
+    if name not in allowance:
       raise AppError(f"pulled seccomp profile allows denied syscall: {name}")
 
   for i in range(1, len(seccomp_profile["syscalls"])):
-    entry = seccomp_profile["syscalls"][i]
-    names = entry["names"]
-
-    if len(names) != 1:
-      raise AppError(f"seccomp_profile.syscalls[{i}].names does not contain exactly 1 entry")
-
-    allowed = replacements.get(names[0], [])
+    entry   = seccomp_profile["syscalls"][i]
+    allowed = replacements.get(entry["names"][0], [])
 
     if entry["action"] != "SCMP_ACT_ERRNO" and entry not in allowed:
       raise AppError(f"seccomp_profile.syscalls[{i}] is not a valid replacement: {entry}")
