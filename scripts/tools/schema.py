@@ -18,7 +18,6 @@ USER_SETTINGS = {
 }
 
 SETTINGS = {
-  "usage": "age <encrypt|decrypt> [args...]",
   "network": False,
   "mount-parent": "/mnt",
   "working-dir": "/mnt/entry",
@@ -30,24 +29,10 @@ SETTINGS = {
     "read_only": [
       ".age"
     ]
-  },
-  "actions": {}
+  }
 }
 
 ENV = "/mnt/home"
-
-ACTION = {
-  "args_min": 2,
-  "args_max": 2,
-  "usage": "encrypt <output-file> <input-file>",
-  "base_args": [
-    "age",
-    "-e",
-    "-i",
-    "/mnt/.age/key.txt",
-    "-o"
-  ]
-}
 
 VERIFY_OUTPUT = [
   {
