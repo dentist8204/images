@@ -194,11 +194,11 @@
         {
           "index": 3,
           "op": "SCMP_CMP_MASKED_EQ",
-          "value": 4292853700,
+          "value": 4294817732,
           "valueTwo": 0
         }
       ],
-      "comment": "allow if MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_NORESERVE, or MAP_STACK (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, include/uapi/asm-generic/mman-common.h)"
+      "comment": "allow if MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_DENYWRITE, MAP_NORESERVE, or MAP_STACK (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, include/uapi/asm-generic/mman-common.h)"
     }
   ]
 }
