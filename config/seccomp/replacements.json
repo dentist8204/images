@@ -119,7 +119,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow MADV_DONTNEED (from include/uapi/asm-generic/mann-common.h)"
+      "comment": "allow MADV_DONTNEED (from include/uapi/asm-generic/mman-common.h)"
     }
   ],
   "futex": [
@@ -182,6 +182,29 @@
         }
       ],
       "comment": "allow FUTEX_WAKE_BITSET (from include/uapi/linux/futex.h)"
+    }
+  ],
+  "mmap": [
+    {
+      "names": [
+        "mmap"
+      ],
+      "action": "SCMP_ACT_ALLOW",
+      "args": [
+        {
+          "index": 2,
+          "op": "SCMP_CMP_MASKED_NE",
+          "value": 6,
+          "valueTwo": 6
+        },
+        {
+          "index": 3,
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 4292853700,
+          "valueTwo": 0
+        }
+      ],
+      "comment": "allow if MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_NORESERVE, MAP_STACK and not PROT_WRITE | PROT_EXEC (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, include/uapi/asm-generic/mman-common.h)"
     }
   ]
 }
