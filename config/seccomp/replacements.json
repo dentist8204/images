@@ -13,7 +13,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow if not CLONE_NEWNS, CLONE_NEWCGROUP, CLONE_NEWUTS CLONE_NEWIPC, CLONE_NEWUSER, CLONE_NEWPID, CLONE_NEWNET (from include/uapi/linux/sched.h)"
+      "comment": "allow if not CLONE_NEWNS, CLONE_NEWCGROUP, CLONE_NEWUTS CLONE_NEWIPC, CLONE_NEWUSER, CLONE_NEWPID, and CLONE_NEWNET (from include/uapi/linux/sched.h)"
     }
   ],
   "socket" : [
@@ -89,7 +89,7 @@
           "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
+      "comment": "allow F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, or F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
     },
     {
       "names": [
@@ -192,19 +192,13 @@
       "action": "SCMP_ACT_ALLOW",
       "args": [
         {
-          "index": 2,
-          "op": "SCMP_CMP_MASKED_NE",
-          "value": 6,
-          "valueTwo": 6
-        },
-        {
           "index": 3,
           "op": "SCMP_CMP_MASKED_EQ",
           "value": 4292853700,
           "valueTwo": 0
         }
       ],
-      "comment": "allow if MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_NORESERVE, MAP_STACK and not PROT_WRITE | PROT_EXEC (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, include/uapi/asm-generic/mman-common.h)"
+      "comment": "allow if MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_NORESERVE, or MAP_STACK (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, include/uapi/asm-generic/mman-common.h)"
     }
   ]
 }
