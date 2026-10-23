@@ -17,42 +17,37 @@ def main():
   (user_settings, settings, context_path) = utils.load_settings(container_name)
   container_source                        = f"{user_settings['registry']}/{container_name}"
 
-  try:
-    result = subprocess.run(["cosign", "verify",
-                             f"--certificate-identity={user_settings['certificate-identity']}",
-                             f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
-                             f"{container_source}:latest"], check=True, stdout=subprocess.PIPE, text=True)
+  result = subprocess.run(["cosign", "verify",
+                            f"--certificate-identity={user_settings['certificate-identity']}",
+                            f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
+                            f"{container_source}:latest"], check=True, stdout=subprocess.PIPE, text=True)
 
-    output = json.loads(result.stdout.strip())
+  output = json.loads(result.stdout.strip())
 
-    utils.check_structure("verify_output", output, schema.VERIFY_OUTPUT)
+  utils.check_structure("verify_output", output, schema.VERIFY_OUTPUT)
 
-    for attachment in output:
-      if attachment["critical"]["type"] == "https://sigstore.dev/cosign/sign/v1":
-        index_digest = attachment["critical"]["image"]["docker-manifest-digest"]
-        break
-    else:
-      raise AppError("could not find https://sigstore.dev/cosign/sign/v1 in verify output")
+  for attachment in output:
+    if attachment["critical"]["type"] == "https://sigstore.dev/cosign/sign/v1":
+      index_digest = attachment["critical"]["image"]["docker-manifest-digest"]
+      break
+  else:
+    raise AppError("could not find https://sigstore.dev/cosign/sign/v1 in verify output")
 
-    result = subprocess.run(["cosign", "verify-attestation", "--type=https://seccomp-profile.local",
-                             f"--certificate-identity={user_settings['certificate-identity']}",
-                             f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
-                             f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
-                            text=True)
+  result = subprocess.run(["cosign", "verify-attestation", "--type=https://seccomp-profile.local",
+                            f"--certificate-identity={user_settings['certificate-identity']}",
+                            f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
+                            f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
+                          text=True)
 
-    output = json.loads(result.stdout.strip())
+  output = json.loads(result.stdout.strip())
 
-    utils.check_structure("attest_output", output, schema.ATTEST_OUTPUT)
+  utils.check_structure("attest_output", output, schema.ATTEST_OUTPUT)
 
-    output = json.loads(base64.b64decode(output["payload"]).decode('utf-8'))
+  output = json.loads(base64.b64decode(output["payload"]).decode('utf-8'))
 
-    utils.check_structure("attest_payload", output, schema.ATTEST_PAYLOAD)
+  utils.check_structure("attest_payload", output, schema.ATTEST_PAYLOAD)
 
-    seccomp_profile = output["predicate"]
-  except KeyboardInterrupt:
-    raise AppError("Interrupted")
-  except subprocess.CalledProcessError as e:
-    raise AppError(e)
+  seccomp_profile = output["predicate"]
 
   if seccomp_profile["defaultAction"] != "SCMP_ACT_ERRNO":
     raise AppError("pulled seccomp profile is not an allow list")
@@ -91,26 +86,26 @@ def main():
     if entry["args"] not in allowed:
       raise AppError(f"seccomp_profile.syscalls[{i}] is not a valid replacement: {entry}")
 
-  try:
-    result = subprocess.run(["podman", "pull", "--tls-verify", "--policy=always", "--quiet",
-                             f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
-                            text=True)
+  result = subprocess.run(["podman", "pull", "--tls-verify", "--policy=always", "--quiet",
+                            f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
+                          text=True)
 
-    subprocess.run(["podman", "untag", f"{container_source}:latest"], stdout=subprocess.DEVNULL,
-                   stderr=subprocess.DEVNULL)
+  subprocess.run(["podman", "untag", f"{container_source}:latest"], stdout=subprocess.DEVNULL,
+                  stderr=subprocess.DEVNULL)
 
-    subprocess.run(["podman", "tag", f"{result.stdout.strip()}", f"{container_source}:latest"], check=True)
-  except KeyboardInterrupt:
-    raise AppError("Interrupted")
-  except subprocess.CalledProcessError as e:
-    raise AppError(e)
+  subprocess.run(["podman", "tag", f"{result.stdout.strip()}", f"{container_source}:latest"], check=True)
 
   with open(f"{context_path}/seccomp.json", "w", encoding="utf-8") as output_file:
     json.dump(seccomp_profile, output_file, indent=2)
 
 if __name__ == "__main__":
   try:
-    main()
+    try:
+      main()
+    except KeyboardInterrupt:
+      raise AppError("Interrupted")
+    except subprocess.CalledProcessError as e:
+      raise AppError(e)
   except AppError as e:
     print("ppull:", e, file=sys.stderr)
     sys.exit(1)
