@@ -1,6 +1,3 @@
 {
-  "epoll_pwait": {
-    "errnoRet": 4,
-    "comment": "Go runtime inconsistencies"
-  }
+  "epoll_pwait": 4
 }

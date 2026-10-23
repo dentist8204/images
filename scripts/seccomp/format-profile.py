@@ -101,8 +101,8 @@ with open("config/seccomp/baseline-replacements.json", "r", encoding="utf-8") as
         syscalls.append({
           "names": [name],
           "action": "SCMP_ACT_ERRNO",
-          "errnoRet": value["errnoRet"],
-          "comment": value["comment"]
+          "errnoRet": value,
+          "comment": "disallow because it sometimes returns this errno while being logged"
         })
 
 with open("seccomp-profile.json", "w", encoding="utf-8") as output_file:
