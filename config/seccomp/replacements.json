@@ -1,10 +1,6 @@
 {
   "clone": [
     {
-      "names": [
-        "clone"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 0,
@@ -13,15 +9,11 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow if not CLONE_NEWNS, CLONE_NEWCGROUP, CLONE_NEWUTS CLONE_NEWIPC, CLONE_NEWUSER, CLONE_NEWPID, and CLONE_NEWNET (from include/uapi/linux/sched.h)"
+      "comment": "disallow CLONE_NEWNS, CLONE_NEWCGROUP, CLONE_NEWUTS CLONE_NEWIPC, CLONE_NEWUSER, CLONE_NEWPID, and CLONE_NEWNET (from include/uapi/linux/sched.h)"
     }
   ],
   "socket" : [
     {
-      "names": [
-        "socket"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 0,
@@ -32,10 +24,6 @@
       "comment": "allow AF_UNIX (from include/linux/socket.h)"
     },
     {
-      "names": [
-        "socket"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 0,
@@ -46,10 +34,6 @@
       "comment": "allow AF_INET (from include/linux/socket.h)"
     },
     {
-      "names": [
-        "socket"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 0,
@@ -62,10 +46,6 @@
   ],
   "prctl": [
     {
-      "names": [
-        "prctl"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 0,
@@ -78,10 +58,6 @@
   ],
   "fcntl": [
     {
-      "names": [
-        "fcntl"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 1,
@@ -89,13 +65,9 @@
           "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, or F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
+      "comment": "allow F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, and F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
     },
     {
-      "names": [
-        "fcntl"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 1,
@@ -108,10 +80,6 @@
   ],
   "madvise": [
     {
-      "names": [
-        "madvise"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 2,
@@ -124,10 +92,6 @@
   ],
   "futex": [
     {
-      "names": [
-        "futex"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 1,
@@ -139,10 +103,6 @@
       "comment": "allow FUTEX_WAIT (from include/uapi/linux/futex.h)"
     },
     {
-      "names": [
-        "futex"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 1,
@@ -154,10 +114,6 @@
       "comment": "allow FUTEX_WAKE (from include/uapi/linux/futex.h)"
     },
     {
-      "names": [
-        "futex"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 1,
@@ -169,10 +125,6 @@
       "comment": "allow FUTEX_WAIT_BITSET (from include/uapi/linux/futex.h)"
     },
     {
-      "names": [
-        "futex"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 1,
@@ -186,10 +138,6 @@
   ],
   "mmap": [
     {
-      "names": [
-        "mmap"
-      ],
-      "action": "SCMP_ACT_ALLOW",
       "args": [
         {
           "index": 3,
@@ -198,7 +146,7 @@
           "valueTwo": 0
         }
       ],
-      "comment": "allow if MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_DENYWRITE, MAP_NORESERVE, or MAP_STACK (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, include/uapi/asm-generic/mman-common.h)"
+      "comment": "allow MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_DENYWRITE, MAP_NORESERVE, and MAP_STACK (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, include/uapi/asm-generic/mman-common.h)"
     }
   ]
 }

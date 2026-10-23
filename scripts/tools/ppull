@@ -70,10 +70,25 @@ def main():
       raise AppError(f"pulled seccomp profile allows denied syscall: {name}")
 
   for i in range(1, len(seccomp_profile["syscalls"])):
-    entry   = seccomp_profile["syscalls"][i]
-    allowed = replacements.get(entry["names"][0], [])
+    entry = seccomp_profile["syscalls"][i]
 
-    if entry["action"] != "SCMP_ACT_ERRNO" and entry not in allowed:
+    action = entry["action"]
+
+    if action == "SCMP_ACT_ERRNO":
+      break
+
+    if action != "SCMP_ACT_ALLOW":
+      raise AppError(f"seccomp_profile.syscalls[{i}].action = {action} is disallowed")
+
+    if len(entry["names"]) != 1:
+      raise AppError(f"seccomp_profile.syscalls[{i}].names is not length 1")
+
+    allowed = [rule["args"] for rule in replacements.get(entry["names"][0], [])]
+
+    if "args" not in entry:
+      raise AppError(f"seccomp_profile.syscalls[{i}].args is missing")
+
+    if entry["args"] not in allowed:
       raise AppError(f"seccomp_profile.syscalls[{i}] is not a valid replacement: {entry}")
 
   try:

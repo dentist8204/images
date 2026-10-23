@@ -55,7 +55,13 @@ for id_ in allowed_ids:
   if name in cluster_mapping:
     allowed_names.update(clusters[cluster_mapping[name]])
   elif name in replacements:
-    syscalls.extend(replacements[name])
+    for rule in replacements[name]:
+      syscalls.append({
+        "names": [name],
+        "action": "SCMP_ACT_ALLOW",
+        "args": rule["args"],
+        "comment": rule["comment"]
+      })
 
     blocked_names.add(name)
   elif name not in allowance:
@@ -96,12 +102,12 @@ for (id_, errnoRet) in blocked_ids:
 all_names = allowed_names | blocked_names
 
 with open("config/seccomp/baseline-replacements.json", "r", encoding="utf-8") as baseline_replacements_file:
-  for (name, value) in json.load(baseline_replacements_file).items():
+  for (name, errnoRet) in json.load(baseline_replacements_file).items():
     if name not in all_names:
         syscalls.append({
           "names": [name],
           "action": "SCMP_ACT_ERRNO",
-          "errnoRet": value,
+          "errnoRet": errnoRet,
           "comment": "disallow because it sometimes returns this errno while being logged"
         })
 
