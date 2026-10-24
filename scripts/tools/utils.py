@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from re import findall
 import subprocess
+import sys
 
 from errors import AppError, UsageError
 import schema
@@ -21,15 +22,12 @@ def load_settings(container_name):
   return (user_settings, settings, context_path)
 
 def load_json(name, file_path, schema_):
-  try:
-    with open(file_path, "r", encoding="utf-8") as file_:
-      json_data = json.load(file_)
+  with open(file_path, "r", encoding="utf-8") as file_:
+    json_data = json.load(file_)
 
-      check_structure(name, json_data, schema_)
+    check_structure(name, json_data, schema_)
 
-      return json_data
-  except (FileNotFoundError, IsADirectoryError, NotADirectoryError, PermissionError) as e:
-    raise AppError(e)
+    return json_data
 
 def check_structure(name, data, schema_):
   if type(data) is not type(schema_):
@@ -44,3 +42,20 @@ def check_structure(name, data, schema_):
   elif isinstance(schema_, list):
     for i in range(0, len(data)):
       check_structure(f"{name}[{i}]", data[i], schema_[0])
+
+def run_main(main, tool_name):
+  try:
+    try:
+      main()
+    except KeyboardInterrupt:
+      raise AppError("interrupted")
+    except subprocess.CalledProcessError as e:
+      raise AppError(e)
+    except OSError as e:
+      raise AppError(e)
+  except AppError as e:
+    print(f"{tool_name}:", e, file=sys.stderr)
+    sys.exit(1)
+  except UsageError as e:
+    print(f"usage: {tool_name}", e, file=sys.stderr)
+    sys.exit(2)

@@ -99,16 +99,4 @@ def main():
     json.dump(seccomp_profile, output_file, indent=2)
 
 if __name__ == "__main__":
-  try:
-    try:
-      main()
-    except KeyboardInterrupt:
-      raise AppError("Interrupted")
-    except subprocess.CalledProcessError as e:
-      raise AppError(e)
-  except AppError as e:
-    print("ppull:", e, file=sys.stderr)
-    sys.exit(1)
-  except UsageError as e:
-    print("usage: ppull", e, file=sys.stderr)
-    sys.exit(2)
+  utils.run_main(main, "ppull")

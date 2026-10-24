@@ -69,10 +69,7 @@ def main():
   run_args.extend(sys.argv[2:])
 
   try:
-    try:
-      os.mkdir(temp_path, 0o700)
-    except (FileExistsError, FileNotFoundError, NotADirectoryError, PermissionError) as e:
-      raise AppError(e)
+    os.mkdir(temp_path, 0o700)
 
     for volume in settings["volumes"]["read_write"]:
       copy_volume(f"{sandbox_path}/{volume}", f"{temp_path}/{volume}")
@@ -104,16 +101,4 @@ def copy_volume(src, dst):
   subprocess.run(["cp", "-RPf", src, dst], stdout=subprocess.DEVNULL, check=True)
 
 if __name__ == "__main__":
-  try:
-    try:
-      main()
-    except KeyboardInterrupt:
-      raise AppError("Interrupted")
-    except subprocess.CalledProcessError as e:
-      raise AppError(e)
-  except AppError as e:
-    print("prun:", e, file=sys.stderr)
-    sys.exit(1)
-  except UsageError as e:
-    print("usage: prun", e, file=sys.stderr)
-    sys.exit(2)
+  utils.run_main(main, "prun")
