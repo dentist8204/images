@@ -106,7 +106,7 @@ if __name__ == "__main__":
       raise AppError("Interrupted")
     except subprocess.CalledProcessError as e:
       raise AppError(e)
-    except OSError:
+    except OSError as e:
       raise AppError(e)
   except AppError as e:
     print("ppull:", e, file=sys.stderr)
