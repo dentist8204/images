@@ -48,7 +48,7 @@ def run_main(main, tool_name):
     try:
       main()
     except KeyboardInterrupt:
-      raise AppError("Interrupted")
+      raise AppError("interrupted")
     except subprocess.CalledProcessError as e:
       raise AppError(e)
     except OSError as e:
