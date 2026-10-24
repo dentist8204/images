@@ -12,6 +12,23 @@
       "comment": "allow CLONE_VM, CLONE_FS, CLONE_FILES, CLONE_SIGHAND, CLONE_VFORK, CLONE_THREAD, CLONE_SYSVSEM, CLONE_SETTLS, CLONE_PARENT_SETTID, CLONE_CHILD_CLEARTID, CLONE_DETACHED, and CLONE_CHILD_SETTID (from include/uapi/linux/sched.h)"
     }
   ],
+  "setsockopt" : [
+    {
+     "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 6
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 1
+        }
+      ],
+      "comment": "allow IPPROTO_TCP+TCP_NODELAY (from include/uapi/linux/in.h and include/uapi/linux/tcp.h)"
+    }
+  ],
   "socket" : [
     {
       "args": [
