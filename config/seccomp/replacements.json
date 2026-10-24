@@ -12,6 +12,23 @@
       "comment": "allow CLONE_VM, CLONE_FS, CLONE_FILES, CLONE_SIGHAND, CLONE_VFORK, CLONE_THREAD, CLONE_SYSVSEM, CLONE_SETTLS, CLONE_PARENT_SETTID, CLONE_CHILD_CLEARTID, CLONE_DETACHED, and CLONE_CHILD_SETTID (from include/uapi/linux/sched.h)"
     }
   ],
+  "setsockopt" : [
+    {
+     "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 6
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 1
+        }
+      ],
+      "comment": "allow IPPROTO_TCP+TCP_NODELAY (from include/uapi/linux/in.h and include/uapi/linux/tcp.h)"
+    }
+  ],
   "socket" : [
     {
       "args": [
@@ -42,6 +59,18 @@
         }
       ],
       "comment": "allow AF_INET6 (from include/linux/socket.h)"
+    }
+  ],
+  "socketpair" : [
+    {
+      "args": [
+        {
+          "index": 0,
+          "value": 1,
+          "op": "SCMP_CMP_EQ"
+        }
+      ],
+      "comment": "allow AF_UNIX (from include/linux/socket.h)"
     }
   ],
   "prctl": [
@@ -146,7 +175,7 @@
           "valueTwo": 0
         }
       ],
-      "comment": "allow MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_DENYWRITE, MAP_NORESERVE, and MAP_STACK (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, include/uapi/asm-generic/mman-common.h)"
+      "comment": "allow MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_DENYWRITE, MAP_NORESERVE, and MAP_STACK (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, and include/uapi/asm-generic/mman-common.h)"
     }
   ]
 }
