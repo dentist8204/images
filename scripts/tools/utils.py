@@ -21,15 +21,12 @@ def load_settings(container_name):
   return (user_settings, settings, context_path)
 
 def load_json(name, file_path, schema_):
-  try:
-    with open(file_path, "r", encoding="utf-8") as file_:
-      json_data = json.load(file_)
+  with open(file_path, "r", encoding="utf-8") as file_:
+    json_data = json.load(file_)
 
-      check_structure(name, json_data, schema_)
+    check_structure(name, json_data, schema_)
 
-      return json_data
-  except (FileNotFoundError, IsADirectoryError, NotADirectoryError, PermissionError) as e:
-    raise AppError(e)
+    return json_data
 
 def check_structure(name, data, schema_):
   if type(data) is not type(schema_):
