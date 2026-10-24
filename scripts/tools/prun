@@ -101,18 +101,4 @@ def copy_volume(src, dst):
   subprocess.run(["cp", "-RPf", src, dst], stdout=subprocess.DEVNULL, check=True)
 
 if __name__ == "__main__":
-  try:
-    try:
-      main()
-    except KeyboardInterrupt:
-      raise AppError("Interrupted")
-    except subprocess.CalledProcessError as e:
-      raise AppError(e)
-    except OSError as e:
-      raise AppError(e)
-  except AppError as e:
-    print("prun:", e, file=sys.stderr)
-    sys.exit(1)
-  except UsageError as e:
-    print("usage: prun", e, file=sys.stderr)
-    sys.exit(2)
+  utils.run_main(main, "prun")
