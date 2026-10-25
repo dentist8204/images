@@ -16,10 +16,26 @@ def main():
   container_name                          = sys.argv[1]
   (user_settings, settings, context_path) = utils.load_settings(container_name)
 
-  for rw_volume in settings["volumes"]["read_write"]:
-    for ro_volume in settings["volumes"]["read_only"]:
-      if ro_volume.startswith(f"{rw_volume}/") or rw_volume.startswith(f"{ro_volume}/") or ro_volume == rw_volume:
-          raise AppError(f"rw: {rw_volume}; ro: {ro_volume} are incompatible")
+  volume_writable = {}
+  volumes         = []
+
+  for volume in settings["volumes"]["read_write"]:
+    if volume in volume_writable:
+      raise AppError(f"duplicated volume: {volume}")
+
+    volume_writable[volume] = True
+
+    volumes.append(volume)
+
+  for volume in settings["volumes"]["read_only"]:
+    if volume in volume_writable:
+      raise AppError(f"duplicated volume: {volume}")
+
+    volume_writable[volume] = False
+
+    volumes.append(volume)
+
+  volumes.sort()
 
   specs         = user_settings["specs"]
   device_bps    = int(specs["disk-bps"] / 8)
@@ -55,15 +71,14 @@ def main():
   mount_parent = settings["mount-parent"]
 
   # a safely sized tmpfs with a reasonable inode cap must be provided for proper resource isolation
-  temp_path = f"{user_settings['tmpfs_path']}/{container_id}"
-
-  for volume in settings["volumes"]["read_write"]:
-    run_args.append(f"--volume={temp_path}/{volume}:{mount_parent}/{volume}:Z,rw,nosuid,nodev")
-
+  temp_path    = f"{user_settings['tmpfs_path']}/{container_id}"
   sandbox_path = os.path.abspath(f"{user_settings['sandbox_path']}/{container_name}")
 
-  for volume in settings["volumes"]["read_only"]:
-    run_args.append(f"--volume={sandbox_path}/{volume}:{mount_parent}/{volume}:Z,ro,nosuid,nodev")
+  for volume in volumes:
+    if (volume_writable[volume]):
+      run_args.append(f"--volume={temp_path}/{volume}:{mount_parent}/{volume}:Z,rw,nosuid,nodev")
+    else:
+      run_args.append(f"--volume={sandbox_path}/{volume}:{mount_parent}/{volume}:Z,ro,nosuid,nodev")
 
   run_args.append(f"{user_settings['registry']}/{container_name}:latest")
   run_args.extend(sys.argv[2:])
@@ -71,8 +86,7 @@ def main():
   try:
     os.mkdir(temp_path, 0o700)
 
-    for volume in settings["volumes"]["read_write"]:
-      copy_volume(f"{sandbox_path}/{volume}", f"{temp_path}/{volume}")
+    subprocess.run(["cp", "-RPfup", f"{sandbox_path}/.", temp_path], stdout=subprocess.DEVNULL, check=True)
 
     subprocess.run(run_args, check=True)
 
@@ -83,8 +97,7 @@ def main():
     if len(result.stdout) > 0:
       raise AppError(f"{container_name} returned weird files")
 
-    for volume in settings["volumes"]["read_write"]:
-      copy_volume(f"{temp_path}/{volume}/.", f"{sandbox_path}/{volume}")
+    subprocess.run(["cp", "-RPfup", f"{temp_path}/.", sandbox_path], stdout=subprocess.DEVNULL, check=True)
   finally:
     subprocess.run(["podman", "stop", container_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     subprocess.run(["podman", "kill", container_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -94,11 +107,6 @@ def main():
 
     subprocess.run(["restorecon", "-RF", sandbox_path], stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL)
-
-def copy_volume(src, dst):
-  os.makedirs(os.path.dirname(dst), exist_ok=True)
-
-  subprocess.run(["cp", "-RPf", src, dst], stdout=subprocess.DEVNULL, check=True)
 
 if __name__ == "__main__":
   utils.run_main(main, "prun")
