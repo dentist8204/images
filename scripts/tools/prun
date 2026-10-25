@@ -90,9 +90,16 @@ def main():
 
     subprocess.run(run_args, check=True)
 
-    result = subprocess.run(["find", temp_path, "-mindepth", "1",
-                             "!", "-type", "f", "!", "-type", "d", "!", "-type", "l",
-                             "-printf", ".", "-quit"], check=True, capture_output=True)
+    # hardlink bomb check
+    result = subprocess.run(["find", temp_path, "-mindepth", "1","-printf", "."], check=True,
+                            capture_output=True)
+
+    if len(result.stdout) > 262144:
+      raise AppError(f"{container_name} returned too many files")
+
+    result = subprocess.run(["find", temp_path, "-mindepth", "1", "!", "-type", "f",
+                             "!", "-type", "d", "!", "-type", "l", "-printf", ".", "-quit"], check=True,
+                            capture_output=True)
 
     if len(result.stdout) > 0:
       raise AppError(f"{container_name} returned weird files")
