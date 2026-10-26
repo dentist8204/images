@@ -2,6 +2,8 @@
 
 import base64
 import json
+import os
+import shutil
 import subprocess
 import sys
 
@@ -28,15 +30,28 @@ def main():
 
   for attachment in output:
     if attachment["critical"]["type"] == "https://sigstore.dev/cosign/sign/v1":
-      index_digest = attachment["critical"]["image"]["docker-manifest-digest"]
+      new_digest = attachment["critical"]["image"]["docker-manifest-digest"]
       break
   else:
     raise AppError("could not find https://sigstore.dev/cosign/sign/v1 in verify output")
 
+  new_digest_value = new_digest.split(":")[1]
+
+  try:
+    current_digest = utils.load_json("reference", f"{context_path}/reference.json",
+                                     schema.REFERENCE)['digest']
+  except FileNotFoundError:
+    current_digest = "sha256:0"
+
+  current_digest_value = current_digest.split(":")[1]
+
+  if current_digest == new_digest:
+    sys.exit(0)
+
   result = subprocess.run(["cosign", "verify-attestation", "--type=https://seccomp-profile.local",
                             f"--certificate-identity={user_settings['certificate-identity']}",
                             f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
-                            f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
+                            f"{container_source}@{new_digest}"], check=True, stdout=subprocess.PIPE,
                           text=True)
 
   output = json.loads(result.stdout.strip())
@@ -86,17 +101,32 @@ def main():
     if entry["args"] not in allowed:
       raise AppError(f"seccomp_profile.syscalls[{i}] is not a valid replacement: {entry}")
 
+  os.makedirs(f"{context_path}/{new_digest_value}", 0o700, exist_ok=True)
+
+  with open(f"{context_path}/{new_digest_value}/seccomp.json", "w", encoding="utf-8") as output_file:
+    json.dump(seccomp_profile, output_file, indent=2)
+
   result = subprocess.run(["podman", "pull", "--tls-verify", "--policy=always", "--quiet",
-                            f"{container_source}@{index_digest}"], check=True, stdout=subprocess.PIPE,
+                            f"{container_source}@{new_digest}"], check=True, stdout=subprocess.PIPE,
                           text=True)
 
-  subprocess.run(["podman", "untag", f"{container_source}:latest"], stdout=subprocess.DEVNULL,
-                  stderr=subprocess.DEVNULL)
+  new_reference = {
+    "registry": user_settings['registry'],
+    "digest": new_digest
+  }
 
-  subprocess.run(["podman", "tag", f"{result.stdout.strip()}", f"{container_source}:latest"], check=True)
+  with open(f"{context_path}/reference-staged.json", "w", encoding="utf-8") as output_file:
+    json.dump(new_reference, output_file, indent=2)
 
-  with open(f"{context_path}/seccomp.json", "w", encoding="utf-8") as output_file:
-    json.dump(seccomp_profile, output_file, indent=2)
+  os.replace(f"{context_path}/reference-staged.json", f"{context_path}/reference.json")
+
+  try:
+    shutil.rmtree(f"{context_path}/{current_digest_value}")
+  except FileNotFoundError:
+    pass
+
+  subprocess.run(["podman", "rmi", f"{container_name}@{current_digest}"],
+                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 if __name__ == "__main__":
   utils.run_main(main, "ppull")

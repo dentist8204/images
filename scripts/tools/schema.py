@@ -99,4 +99,9 @@ ATTEST_PAYLOAD = {
   }
 }
 
+REFERENCE = {
+  "registry": "ghcr.io/dentist8204/images",
+  "digest": "0000000000000000000000000000000000000000000000000000000000000000"
+}
+
 A_DICT = {}
