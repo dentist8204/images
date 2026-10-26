@@ -14,38 +14,18 @@ def main():
     raise UsageError("<container> <command> [args...]")
 
   container_name                          = sys.argv[1]
+  random_suffix                           = secrets.token_urlsafe(16)
   (user_settings, settings, context_path) = utils.load_settings(container_name)
+  reference                               = utils.load_json("reference", f"{context_path}/reference.json",
+                                                            schema.REFERENCE)
 
-  volume_writable = {}
-  volumes         = []
+  container_id = "prun.id." + random_suffix
+  digest       = reference['digest']
+  device_name  = user_settings["disk_name"]
+  specs        = user_settings["specs"]
 
-  for volume in settings["volumes"]["read_write"]:
-    if volume in volume_writable:
-      raise AppError(f"duplicated volume: {volume}")
-
-    volume_writable[volume] = True
-
-    volumes.append(volume)
-
-  for volume in settings["volumes"]["read_only"]:
-    if volume in volume_writable:
-      raise AppError(f"duplicated volume: {volume}")
-
-    volume_writable[volume] = False
-
-    volumes.append(volume)
-
-  volumes.sort()
-
-  specs         = user_settings["specs"]
   device_bps    = int(specs["disk-bps"] / 8)
   device_iops   = int(specs["disk-iops"] / 8)
-  device_name   = user_settings["disk_name"]
-  random_suffix = secrets.token_urlsafe(16)
-  container_id  = "prun.id." + random_suffix
-
-  reference = utils.load_json("reference", f"{context_path}/reference.json", schema.REFERENCE)
-  digest    = reference['digest']
 
   run_args = ["podman", "run", "--rm", f"--workdir={settings['working-dir']}", f"--name={container_id}",
               "--cap-drop=all", "--runtime=crun", "--log-driver=none", "--pull=never", "--read-only",
@@ -72,11 +52,31 @@ def main():
 
     run_args.append(f"--env={var}={val}")
 
-  mount_parent = settings["mount-parent"]
+  volume_writable = {}
+  volumes         = []
+
+  for volume in settings["volumes"]["read_write"]:
+    if volume in volume_writable:
+      raise AppError(f"duplicate volume: {volume}")
+
+    volume_writable[volume] = True
+
+    volumes.append(volume)
+
+  for volume in settings["volumes"]["read_only"]:
+    if volume in volume_writable:
+      raise AppError(f"duplicate volume: {volume}")
+
+    volume_writable[volume] = False
+
+    volumes.append(volume)
+
+  volumes.sort()
 
   # a safely sized tmpfs with a reasonable inode cap must be provided for proper resource isolation
-  temp_path    = f"{user_settings['tmpfs_path']}/{container_id}"
+  temp_path    = f"{user_settings['tmpfs_path']}/{random_suffix}"
   sandbox_path = os.path.abspath(f"{user_settings['sandbox_path']}/{container_name}")
+  mount_parent = settings["mount-parent"]
 
   for volume in volumes:
     if (volume_writable[volume]):
@@ -95,7 +95,6 @@ def main():
 
     subprocess.run(run_args, check=True)
 
-    # hardlink bomb check
     result = subprocess.run(["find", temp_path, "-mindepth", "1","-printf", "."], check=True,
                             capture_output=True)
 
@@ -112,11 +111,10 @@ def main():
     subprocess.run(["rsync", "-Hrlpt", "--delete", f"{temp_path}/.", sandbox_path],
                    stdout=subprocess.DEVNULL, check=True)
   finally:
-    subprocess.run(["podman", "stop", container_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["podman", "kill", container_id], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["podman", "stop", "--time=3", container_id], stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL)
 
-    if os.path.exists(temp_path):
-      subprocess.run(["find", temp_path, "-delete"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.run(["find", temp_path, "-delete"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     subprocess.run(["restorecon", "-RF", sandbox_path], stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL)
