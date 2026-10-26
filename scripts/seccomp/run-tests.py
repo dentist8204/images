@@ -60,7 +60,7 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(kill_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
   subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
-time.sleep(1)
+time.sleep(5)
 
 subprocess.run(["sudo", "pkill", "-INT", "bpftrace"], check=True)
 
