@@ -85,7 +85,7 @@ def main():
     action = entry["action"]
 
     if action == "SCMP_ACT_ERRNO":
-      break
+      continue
 
     if action != "SCMP_ACT_ALLOW":
       raise AppError(f"seccomp_profile.syscalls[{i}].action = {action} is disallowed")
