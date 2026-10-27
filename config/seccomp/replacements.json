@@ -36,9 +36,14 @@
           "index": 0,
           "value": 1,
           "op": "SCMP_CMP_EQ"
+        },
+        {
+          "index": 1,
+          "value": 3,
+          "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow AF_UNIX (from include/linux/socket.h)"
+      "comment": "allow AF_UNIX+(SOCK_STREAM and SOCK_DGRAM) (from include/linux/socket.h and include/linux/net.h)"
     },
     {
       "args": [
@@ -46,9 +51,14 @@
           "index": 0,
           "value": 2,
           "op": "SCMP_CMP_EQ"
+        },
+        {
+          "index": 1,
+          "value": 3,
+          "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow AF_INET (from include/linux/socket.h)"
+      "comment": "allow AF_INET+(SOCK_STREAM and SOCK_DGRAM) (from include/linux/socket.h and include/linux/net.h)"
     },
     {
       "args": [
@@ -56,9 +66,14 @@
           "index": 0,
           "value": 10,
           "op": "SCMP_CMP_EQ"
+        },
+        {
+          "index": 1,
+          "value": 3,
+          "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow AF_INET6 (from include/linux/socket.h)"
+      "comment": "allow AF_INET6+(SOCK_STREAM and SOCK_DGRAM) (from include/linux/socket.h and include/linux/net.h)"
     }
   ],
   "socketpair" : [
@@ -68,9 +83,14 @@
           "index": 0,
           "value": 1,
           "op": "SCMP_CMP_EQ"
+        },
+        {
+          "index": 1,
+          "value": 3,
+          "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow AF_UNIX (from include/linux/socket.h)"
+      "comment": "allow AF_UNIX+(SOCK_STREAM and SOCK_DGRAM) (from include/linux/socket.h and include/linux/net.h)"
     }
   ],
   "prctl": [
