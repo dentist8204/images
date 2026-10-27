@@ -9,7 +9,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow CLONE_VM, CLONE_FS, CLONE_FILES, CLONE_SIGHAND, CLONE_VFORK, CLONE_THREAD, CLONE_SYSVSEM, CLONE_SETTLS, CLONE_PARENT_SETTID, CLONE_CHILD_CLEARTID, CLONE_DETACHED, and CLONE_CHILD_SETTID (from include/uapi/linux/sched.h)"
+      "comment": "allow clone(any of {CLONE_VM, CLONE_FS, CLONE_FILES, CLONE_SIGHAND, CLONE_VFORK, CLONE_THREAD, CLONE_SYSVSEM, CLONE_SETTLS, CLONE_PARENT_SETTID, CLONE_CHILD_CLEARTID, CLONE_DETACHED, CLONE_CHILD_SETTID}, *, *, *, *) (from include/uapi/linux/sched.h)"
     }
   ],
   "setsockopt" : [
@@ -26,7 +26,7 @@
           "value": 1
         }
       ],
-      "comment": "allow IPPROTO_TCP+TCP_NODELAY (from include/uapi/linux/in.h and include/uapi/linux/tcp.h)"
+      "comment": "allow setsockopt(*, IPPROTO_TCP, TCP_NODELAY, *, *) (from include/uapi/linux/in.h and include/uapi/linux/tcp.h)"
     }
   ],
   "socket" : [
@@ -43,7 +43,7 @@
           "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow AF_UNIX+(SOCK_STREAM and SOCK_DGRAM) (from include/linux/socket.h and include/linux/net.h)"
+      "comment": "allow socket(AF_UNIX, one of {SOCK_STREAM, SOCK_DGRAM}, *) (from include/linux/socket.h and include/linux/net.h)"
     },
     {
       "args": [
@@ -58,7 +58,7 @@
           "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow AF_INET+(SOCK_STREAM and SOCK_DGRAM) (from include/linux/socket.h and include/linux/net.h)"
+      "comment": "allow socket(AF_INET, one of {SOCK_STREAM, SOCK_DGRAM}, *) (from include/linux/socket.h and include/linux/net.h)"
     },
     {
       "args": [
@@ -73,7 +73,7 @@
           "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow AF_INET6+(SOCK_STREAM and SOCK_DGRAM) (from include/linux/socket.h and include/linux/net.h)"
+      "comment": "allow socket(AF_INET6, one of {SOCK_STREAM, SOCK_DGRAM}, *) (from include/linux/socket.h and include/linux/net.h)"
     }
   ],
   "socketpair" : [
@@ -90,7 +90,7 @@
           "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow AF_UNIX+(SOCK_STREAM and SOCK_DGRAM) (from include/linux/socket.h and include/linux/net.h)"
+      "comment": "allow socketpair(AF_UNIX, one of {SOCK_STREAM, SOCK_DGRAM}, *, *) (from include/linux/socket.h and include/linux/net.h)"
     }
   ],
   "prctl": [
@@ -102,7 +102,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow PR_SET_NAME (from include/uapi/linux/prctl.h)"
+      "comment": "allow prctl(PR_SET_NAME, ...) (from include/uapi/linux/prctl.h)"
     }
   ],
   "fcntl": [
@@ -114,7 +114,7 @@
           "op": "SCMP_CMP_LT"
         }
       ],
-      "comment": "allow F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, and F_SETLKW (from include/uapi/asm-generic/fcntl.h)"
+      "comment": "allow fcntl(*, one of {F_DUPFD, F_GETFD, F_SETFD, F_GETFL, F_SETFL, F_GETLK, F_SETLK, F_SETLKW}, ...) (from include/uapi/asm-generic/fcntl.h)"
     },
     {
       "args": [
@@ -124,7 +124,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow F_DUPFD_CLOEXEC (from include/uapi/linux/fcntl.h)"
+      "comment": "allow fcntl(*, F_DUPFD_CLOEXEC, ...) (from include/uapi/linux/fcntl.h)"
     }
   ],
   "madvise": [
@@ -136,7 +136,7 @@
           "op": "SCMP_CMP_EQ"
         }
       ],
-      "comment": "allow MADV_DONTNEED (from include/uapi/asm-generic/mman-common.h)"
+      "comment": "allow madvise(*, *, MADV_DONTNEED) (from include/uapi/asm-generic/mman-common.h)"
     }
   ],
   "futex": [
@@ -149,7 +149,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow FUTEX_WAIT (from include/uapi/linux/futex.h)"
+      "comment": "allow futex(*, FUTEX_WAIT | any of {FUTEX_PRIVATE_FLAG, FUTEX_CLOCK_REALTIME, FUTEX_ROBUST_UNLOCK, FUTEX_ROBUST_LIST32}, ...) (from include/uapi/linux/futex.h)"
     },
     {
       "args": [
@@ -160,7 +160,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow FUTEX_WAKE (from include/uapi/linux/futex.h)"
+      "comment": "allow futex(*, FUTEX_WAKE | any of {FUTEX_PRIVATE_FLAG, FUTEX_CLOCK_REALTIME, FUTEX_ROBUST_UNLOCK, FUTEX_ROBUST_LIST32}, ...) (from include/uapi/linux/futex.h)"
     },
     {
       "args": [
@@ -171,7 +171,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow FUTEX_WAIT_BITSET (from include/uapi/linux/futex.h)"
+      "comment": "allow futex(*, FUTEX_WAIT_BITSET | any of {FUTEX_PRIVATE_FLAG, FUTEX_CLOCK_REALTIME, FUTEX_ROBUST_UNLOCK, FUTEX_ROBUST_LIST32}, ...) (from include/uapi/linux/futex.h)"
     },
     {
       "args": [
@@ -182,7 +182,7 @@
           "op": "SCMP_CMP_MASKED_EQ"
         }
       ],
-      "comment": "allow FUTEX_WAKE_BITSET (from include/uapi/linux/futex.h)"
+      "comment": "allow futex(*, FUTEX_WAKE_BITSET | any of {FUTEX_PRIVATE_FLAG, FUTEX_CLOCK_REALTIME, FUTEX_ROBUST_UNLOCK, FUTEX_ROBUST_LIST32}, ...) (from include/uapi/linux/futex.h)"
     }
   ],
   "mmap": [
@@ -195,7 +195,7 @@
           "valueTwo": 0
         }
       ],
-      "comment": "allow MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_DENYWRITE, MAP_NORESERVE, and MAP_STACK (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, and include/uapi/asm-generic/mman-common.h)"
+      "comment": "allow mmap(*, *, *, any of {MAP_SHARED, MAP_PRIVATE, MAP_DROPPABLE, MAP_FIXED, MAP_ANONYMOUS, MAP_DENYWRITE, MAP_NORESERVE, MAP_STACK}, *, *) (from include/uapi/linux/mman.h, include/uapi/asm-generic/mman.h, and include/uapi/asm-generic/mman-common.h)"
     }
   ]
 }
