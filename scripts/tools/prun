@@ -103,6 +103,9 @@ def main():
 
     subprocess.run(["podman", "attach", "--no-stdin", container_id], check=True)
 
+    subprocess.run(["podman", "wait", container_id], stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL)
+
     result = subprocess.run(["find", temp_path, "-mindepth", "1","-printf", "."], check=True,
                             capture_output=True)
 
