@@ -27,6 +27,66 @@
         }
       ],
       "comment": "allow setsockopt(*, IPPROTO_TCP, TCP_NODELAY, *, *) (from include/uapi/linux/in.h and include/uapi/linux/tcp.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 0
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 11
+        }
+      ],
+      "comment": "allow setsockopt(*, IPPROTO_IP, IP_RECVERR, *, *) (from include/uapi/linux/in.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 9
+        }
+      ],
+      "comment": "allow setsockopt(*, SOL_SOCKET, SO_KEEPALIVE, *, *) (from include/uapi/asm-generic/socket.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 2
+        }
+      ],
+      "comment": "allow setsockopt(*, SOL_SOCKET, SO_REUSEADDR, *, *) (from include/uapi/asm-generic/socket.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 41
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 26
+        }
+      ],
+      "comment": "allow setsockopt(*, IPPROTO_IPV6, IPV6_V6ONLY, *, *) (from include/uapi/linux/in.h and include/uapi/linux/in6.h)"
     }
   ],
   "socket" : [
@@ -34,46 +94,97 @@
       "args": [
         {
           "index": 0,
-          "value": 1,
-          "op": "SCMP_CMP_EQ"
+          "op": "SCMP_CMP_EQ",
+          "value": 1
         },
         {
           "index": 1,
-          "value": 3,
-          "op": "SCMP_CMP_LT"
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 15,
+          "valueTwo": 1
         }
       ],
-      "comment": "allow socket(AF_UNIX, one of {SOCK_STREAM, SOCK_DGRAM}, *) (from include/linux/socket.h and include/linux/net.h)"
+      "comment": "allow socket(AF_UNIX, SOCK_STREAM | any of {SOCK_CLOEXEC, SOCK_NONBLOCK, SOCK_COREDUMP}, *) (from include/linux/socket.h and include/linux/net.h)"
     },
     {
       "args": [
         {
           "index": 0,
-          "value": 2,
-          "op": "SCMP_CMP_EQ"
+          "op": "SCMP_CMP_EQ",
+          "value": 1
         },
         {
           "index": 1,
-          "value": 3,
-          "op": "SCMP_CMP_LT"
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 15,
+          "valueTwo": 2
         }
       ],
-      "comment": "allow socket(AF_INET, one of {SOCK_STREAM, SOCK_DGRAM}, *) (from include/linux/socket.h and include/linux/net.h)"
+      "comment": "allow socket(AF_UNIX, SOCK_DGRAM | any of {SOCK_CLOEXEC, SOCK_NONBLOCK, SOCK_COREDUMP}, *) (from include/linux/socket.h and include/linux/net.h)"
     },
     {
       "args": [
         {
           "index": 0,
-          "value": 10,
-          "op": "SCMP_CMP_EQ"
+          "op": "SCMP_CMP_EQ",
+          "value": 2
         },
         {
           "index": 1,
-          "value": 3,
-          "op": "SCMP_CMP_LT"
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 15,
+          "valueTwo": 1
         }
       ],
-      "comment": "allow socket(AF_INET6, one of {SOCK_STREAM, SOCK_DGRAM}, *) (from include/linux/socket.h and include/linux/net.h)"
+      "comment": "allow socket(AF_INET, SOCK_STREAM | any of {SOCK_CLOEXEC, SOCK_NONBLOCK, SOCK_COREDUMP}, *) (from include/linux/socket.h and include/linux/net.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 0,
+          "op": "SCMP_CMP_EQ",
+          "value": 2
+        },
+        {
+          "index": 1,
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 15,
+          "valueTwo": 2
+        }
+      ],
+      "comment": "allow socket(AF_INET, SOCK_DGRAM | any of {SOCK_CLOEXEC, SOCK_NONBLOCK, SOCK_COREDUMP}, *) (from include/linux/socket.h and include/linux/net.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 0,
+          "op": "SCMP_CMP_EQ",
+          "value": 10
+        },
+        {
+          "index": 1,
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 15,
+          "valueTwo": 1
+        }
+      ],
+      "comment": "allow socket(AF_INET6, SOCK_STREAM | any of {SOCK_CLOEXEC, SOCK_NONBLOCK, SOCK_COREDUMP}, *) (from include/linux/socket.h and include/linux/net.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 0,
+          "op": "SCMP_CMP_EQ",
+          "value": 10
+        },
+        {
+          "index": 1,
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 15,
+          "valueTwo": 2
+        }
+      ],
+      "comment": "allow socket(AF_INET6, SOCK_DGRAM | any of {SOCK_CLOEXEC, SOCK_NONBLOCK, SOCK_COREDUMP}, *) (from include/linux/socket.h and include/linux/net.h)"
     }
   ],
   "socketpair" : [
@@ -81,16 +192,33 @@
       "args": [
         {
           "index": 0,
-          "value": 1,
-          "op": "SCMP_CMP_EQ"
+          "op": "SCMP_CMP_EQ",
+          "value": 1
         },
         {
           "index": 1,
-          "value": 3,
-          "op": "SCMP_CMP_LT"
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 15,
+          "valueTwo": 1
         }
       ],
-      "comment": "allow socketpair(AF_UNIX, one of {SOCK_STREAM, SOCK_DGRAM}, *, *) (from include/linux/socket.h and include/linux/net.h)"
+      "comment": "allow socket(AF_UNIX, SOCK_STREAM | any of {SOCK_CLOEXEC, SOCK_NONBLOCK, SOCK_COREDUMP}, *) (from include/linux/socket.h and include/linux/net.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 0,
+          "op": "SCMP_CMP_EQ",
+          "value": 1
+        },
+        {
+          "index": 1,
+          "op": "SCMP_CMP_MASKED_EQ",
+          "value": 15,
+          "valueTwo": 2
+        }
+      ],
+      "comment": "allow socket(AF_UNIX, SOCK_DGRAM | any of {SOCK_CLOEXEC, SOCK_NONBLOCK, SOCK_COREDUMP}, *) (from include/linux/socket.h and include/linux/net.h)"
     }
   ],
   "prctl": [
