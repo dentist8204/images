@@ -13,40 +13,27 @@ def main():
   if len(sys.argv) < 3:
     raise UsageError("<container> <command> [args...]")
 
-  container_name                          = sys.argv[1]
-  random_suffix                           = secrets.token_urlsafe(16)
+  container_name = sys.argv[1]
+  container_id   = "prun.id." + secrets.token_urlsafe(16)
+  run_args       = ["podman", "create", "--rm", "--cap-drop=all", "--runtime=crun", "--log-driver=none",
+                    "--pull=never", "--read-only", "--ulimit=nofile=1024:1024", "--ulimit=locks=1024:1024",
+                    "--ulimit=sigpending=1024:1024", "--ulimit=core=0:0", "--ulimit=memlock=0:0",
+                    "--ulimit=msgqueue=0:0", "--cgroupns=private", "--ipc=private", "--pid=private",
+                    "--uts=private", "--security-opt=no-new-privileges", "--cpu-period=100000",
+                    "--pids-limit=256"]
+
+  run_args.append(f"--name={container_id}")
+
   (user_settings, settings, context_path) = utils.load_settings(container_name)
-  reference                               = utils.load_json("reference", f"{context_path}/reference.json",
-                                                            schema.REFERENCE)
+
+  run_args.append(f"--workdir={settings['working-dir']}")
 
   if ("uid" in settings):
     uid = settings["uid"]
   else:
     uid = 1007
 
-  container_id = "prun.id." + random_suffix
-  digest       = reference['digest']
-  device_name  = user_settings["disk_name"]
-  specs        = user_settings["specs"]
-
-  device_bps    = int(specs["disk-bps"] / 8)
-  device_iops   = int(specs["disk-iops"] / 8)
-
-  run_args = ["podman", "run", "--rm", "-d",
-              f"--name={container_id}", f"--workdir={settings['working-dir']}",
-              "--cap-drop=all", "--runtime=crun", "--log-driver=none", "--pull=never", "--read-only",
-              "--cpu-period=100000", f"--cpu-quota={int(specs['cpus'] * 25000)}",
-              f"--memory={int(specs['memory'] / 4)}m", "--pids-limit=256",
-              f"--device-read-bps={device_name}:{device_bps}mb",
-              f"--device-write-bps={device_name}:{device_bps}mb",
-              f"--device-read-iops={device_name}:{device_iops}",
-              f"--device-write-iops={device_name}:{device_iops}",
-              "--ulimit=nofile=1024:1024", "--ulimit=locks=1024:1024", "--ulimit=sigpending=1024:1024",
-              "--ulimit=core=0:0", "--ulimit=memlock=0:0", "--ulimit=msgqueue=0:0",
-              "--cgroupns=private", "--ipc=private", "--pid=private", "--uts=private",
-              f"--userns=keep-id:uid={uid},gid={uid}",
-              "--security-opt=no-new-privileges",
-              f"--security-opt=seccomp={context_path}/{digest.split(':')[1]}/seccomp.json"]
+  run_args.append(f"--userns=keep-id:uid={uid},gid={uid}")
 
   if (settings["network"]):
     run_args.append("--network=private")
@@ -57,6 +44,24 @@ def main():
     utils.check_structure(f"settings.env.{var}", val, schema.ENV)
 
     run_args.append(f"--env={var}={val}")
+
+  device_name  = user_settings["disk_name"]
+  specs        = user_settings["specs"]
+
+  device_bps  = int(specs["disk-bps"] / 8)
+  device_iops = int(specs["disk-iops"] / 8)
+
+  run_args.extend([f"--cpu-quota={int(specs['cpus'] * 25000)}", f"--memory={int(specs['memory'] / 4)}m",
+                   f"--device-read-bps={device_name}:{device_bps}mb",
+                   f"--device-write-bps={device_name}:{device_bps}mb",
+                   f"--device-read-iops={device_name}:{device_iops}",
+                   f"--device-write-iops={device_name}:{device_iops}"])
+
+  reference = utils.load_json("reference", f"{context_path}/reference.json", schema.REFERENCE)
+
+  digest = reference['digest']
+
+  run_args.append(f"--security-opt=seccomp={context_path}/{digest.split(':')[1]}/seccomp.json")
 
   volume_writable = {}
   volumes         = []
@@ -80,7 +85,7 @@ def main():
   volumes.sort()
 
   # a safely sized tmpfs with a reasonable inode cap must be provided for proper resource isolation
-  temp_path    = f"{user_settings['tmpfs_path']}/{random_suffix}"
+  temp_path    = f"{user_settings['tmpfs_path']}/{container_id}"
   sandbox_path = os.path.abspath(f"{user_settings['sandbox_path']}/{container_name}")
   mount_parent = settings["mount-parent"]
 
@@ -101,10 +106,7 @@ def main():
 
     subprocess.run(run_args, check=True)
 
-    subprocess.run(["podman", "attach", "--no-stdin", container_id], check=True)
-
-    subprocess.run(["podman", "wait", container_id], stdout=subprocess.DEVNULL,
-                   stderr=subprocess.DEVNULL)
+    subprocess.run(["podman", "start", "-a", container_id])
 
     result = subprocess.run(["find", temp_path, "-mindepth", "1","-printf", "."], check=True,
                             capture_output=True)
