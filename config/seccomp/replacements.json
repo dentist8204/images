@@ -27,6 +27,66 @@
         }
       ],
       "comment": "allow setsockopt(*, IPPROTO_TCP, TCP_NODELAY, *, *) (from include/uapi/linux/in.h and include/uapi/linux/tcp.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 0
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 11
+        }
+      ],
+      "comment": "allow setsockopt(*, IPPROTO_IP, IP_RECVERR, *, *) (from include/uapi/linux/in.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 9
+        }
+      ],
+      "comment": "allow setsockopt(*, SOL_SOCKET, SO_KEEPALIVE, *, *) (from include/uapi/asm-generic/socket.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 2
+        }
+      ],
+      "comment": "allow setsockopt(*, SOL_SOCKET, SO_REUSEADDR, *, *) (from include/uapi/asm-generic/socket.h)"
+    },
+    {
+      "args": [
+        {
+          "index": 1,
+          "op": "SCMP_CMP_EQ",
+          "value": 41
+        },
+        {
+          "index": 2,
+          "op": "SCMP_CMP_EQ",
+          "value": 26
+        }
+      ],
+      "comment": "allow setsockopt(*, IPPROTO_IPV6, IPV6_V6ONLY, *, *) (from include/uapi/linux/in.h and include/uapi/linux/in6.h)"
     }
   ],
   "socket" : [
