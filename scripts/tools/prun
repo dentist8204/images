@@ -32,7 +32,8 @@ def main():
   device_bps    = int(specs["disk-bps"] / 8)
   device_iops   = int(specs["disk-iops"] / 8)
 
-  run_args = ["podman", "run", "--rm", f"--workdir={settings['working-dir']}", f"--name={container_id}",
+  run_args = ["podman", "run", "--rm", "-d",
+              f"--name={container_id}", f"--workdir={settings['working-dir']}",
               "--cap-drop=all", "--runtime=crun", "--log-driver=none", "--pull=never", "--read-only",
               "--cpu-period=100000", f"--cpu-quota={int(specs['cpus'] * 25000)}",
               f"--memory={int(specs['memory'] / 4)}m", "--pids-limit=256",
@@ -99,6 +100,8 @@ def main():
                    check=True)
 
     subprocess.run(run_args, check=True)
+
+    subprocess.run(["podman", "attach", "--no-stdin", container_id], check=True)
 
     result = subprocess.run(["find", temp_path, "-mindepth", "1","-printf", "."], check=True,
                             capture_output=True)
