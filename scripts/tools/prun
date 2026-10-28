@@ -108,11 +108,11 @@ def main():
 
     subprocess.run(["podman", "start", "-a", container_id])
 
-    result = subprocess.run(["find", temp_path, "-mindepth", "1","-printf", "."], check=True,
-                            capture_output=True)
+    result = subprocess.run(["find", temp_path, "-mindepth", "1", "!", "-type", "d", "-links", "+20",
+                             "-printf", ".", "-quit"], check=True, capture_output=True)
 
-    if len(result.stdout) > 262144:
-      raise AppError(f"{container_name} returned too many files")
+    if len(result.stdout) > 0:
+      raise AppError(f"{container_name} returned a file with too many hard links")
 
     result = subprocess.run(["find", temp_path, "-mindepth", "1", "!", "-type", "f",
                              "!", "-type", "d", "!", "-type", "l", "-printf", ".", "-quit"], check=True,
