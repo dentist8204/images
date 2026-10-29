@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-from re import findall
+import re
 import subprocess
 import sys
 
@@ -25,8 +25,11 @@ defaults = {
 def load_settings(container_name):
   if len(container_name) > 100:
     raise AppError("container name is too long")
-  elif findall(r"[^a-zA-Z0-9\-_]", container_name):
-    raise AppError("container name has invalid characters")
+  elif len(container_name) < 1:
+    raise AppError("container name is too short")
+  # https://specs.opencontainers.org/distribution-spec/#DISTRIBUTION-SPEC-27
+  elif not re.fullmatch(r"[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*", container_name):
+    raise AppError("container name is invalid")
 
   user_settings = load_json("user_settings", f"{Path.home()}/.config/prun/settings.json",
                             schema.USER_SETTINGS)
