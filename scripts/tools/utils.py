@@ -40,7 +40,10 @@ def load_settings(container_name):
 
 def load_json(name, file_path, schema_):
   with open(file_path, "r", encoding="utf-8") as file_:
-    json_data = json.load(file_)
+    try:
+      json_data = json.load(file_)
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+      raise AppError(f"{file_path}: {e}")
 
     check_structure(name, json_data, schema_)
 
@@ -66,9 +69,7 @@ def run_main(main, tool_name):
       main()
     except KeyboardInterrupt:
       raise AppError("interrupted")
-    except subprocess.CalledProcessError as e:
-      raise AppError(e)
-    except OSError as e:
+    except (OSError, subprocess.CalledProcessError) as e:
       raise AppError(e)
   except AppError as e:
     print(f"{tool_name}:", e, file=sys.stderr)
