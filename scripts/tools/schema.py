@@ -1,20 +1,11 @@
 # all terminal values in the following schemas are only there as examples and do not effect validation
 
 USER_SETTINGS = {
-  "registry": "ghcr.io/dentist8204/images",
-  "certificate-identity": "https://github.com/dentist8204/images/.github/workflows/build-one.yml@refs/heads/main",
-  "certificate-oidc-issuer": "https://token.actions.githubusercontent.com",
   "seccomp-config-path": "/home/user/repos/images/config/seccomp",
-  "sandbox_path": "/home/user/.var/sandbox",
-  "context_path": "/home/user/.local/share/prun",
-  "tmpfs_path": "/home/user/.var/mnt/prun",
-  "disk_name": "/dev/nvme0n1",
-  "specs": {            # used for cgroups flags
-    "cpus": 8,          # hardware threads, will be divided by 4
-    "memory": 8192,     # total memory, will be divided by 4
-    "disk-bps": 1024,   # disk throughput, will be divided by 8 for read and write
-    "disk-iops": 250000 # random-4k iops, will be divided by 8 for read and write
-  }
+  "sandbox-path": "/home/user/.var/sandbox",
+  "context-path": "/home/user/.local/share/prun",
+  "tmpfs-path": "/home/user/.var/mnt/prun",
+  "disk-name": "/dev/nvme0n1"
 }
 
 SETTINGS = {

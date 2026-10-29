@@ -19,21 +19,13 @@ def main():
                     "--pull=never", "--read-only", "--ulimit=nofile=1024:1024", "--ulimit=locks=1024:1024",
                     "--ulimit=sigpending=1024:1024", "--ulimit=core=0:0", "--ulimit=memlock=0:0",
                     "--ulimit=msgqueue=0:0", "--cgroupns=private", "--ipc=private", "--pid=private",
-                    "--uts=private", "--security-opt=no-new-privileges", "--cpu-period=100000",
-                    "--pids-limit=256"]
+                    "--uts=private", "--security-opt=no-new-privileges", "--pids-limit=256"]
 
   run_args.append(f"--name={container_id}")
 
   (user_settings, settings, context_path) = utils.load_settings(container_name)
 
   run_args.append(f"--workdir={settings['working-dir']}")
-
-  if ("uid" in settings):
-    uid = settings["uid"]
-  else:
-    uid = 1007
-
-  run_args.append(f"--userns=keep-id:uid={uid},gid={uid}")
 
   if (settings["network"]):
     run_args.append("--network=private")
@@ -45,17 +37,19 @@ def main():
 
     run_args.append(f"--env={var}={val}")
 
-  device_name  = user_settings["disk_name"]
-  specs        = user_settings["specs"]
+  device_name = user_settings["disk-name"]
+  uid         = utils.get_value("uid", user_settings, settings)
+  disk_bps    = utils.get_value("disk-bps", user_settings, settings)
+  disk_iops   = utils.get_value("disk-iops", user_settings, settings)
 
-  device_bps  = int(specs["disk-bps"] / 8)
-  device_iops = int(specs["disk-iops"] / 8)
-
-  run_args.extend([f"--cpu-quota={int(specs['cpus'] * 25000)}", f"--memory={int(specs['memory'] / 4)}m",
-                   f"--device-read-bps={device_name}:{device_bps}mb",
-                   f"--device-write-bps={device_name}:{device_bps}mb",
-                   f"--device-read-iops={device_name}:{device_iops}",
-                   f"--device-write-iops={device_name}:{device_iops}"])
+  run_args.extend([f"--userns=keep-id:uid={uid},gid={uid}",
+                   f"--cpu-period={utils.get_value('cpu-period', user_settings, settings)}",
+                   f"--cpu-quota={utils.get_value('cpu-qouta', user_settings, settings)}",
+                   f"--memory={utils.get_value('memory', user_settings, settings)}m",
+                   f"--device-read-bps={device_name}:{disk_bps}mb",
+                   f"--device-write-bps={device_name}:{disk_bps}mb",
+                   f"--device-read-iops={device_name}:{disk_iops}",
+                   f"--device-write-iops={device_name}:{disk_iops}"])
 
   reference = utils.load_json("reference", f"{context_path}/reference.json", schema.REFERENCE)
 
@@ -85,8 +79,8 @@ def main():
   volumes.sort()
 
   # a safely sized tmpfs with a reasonable inode cap must be provided for proper resource isolation
-  temp_path    = f"{user_settings['tmpfs_path']}/{container_id}"
-  sandbox_path = os.path.abspath(f"{user_settings['sandbox_path']}/{container_name}")
+  temp_path    = f"{user_settings['tmpfs-path']}/{container_id}"
+  sandbox_path = os.path.abspath(f"{user_settings['sandbox-path']}/{container_name}")
   mount_parent = settings["mount-parent"]
 
   for volume in volumes:
@@ -108,8 +102,10 @@ def main():
 
     subprocess.run(["podman", "start", "-a", container_id])
 
-    result = subprocess.run(["find", temp_path, "-mindepth", "1", "!", "-type", "d", "-links", "+20",
-                             "-printf", ".", "-quit"], check=True, capture_output=True)
+    hardlinks_max = utils.get_value("hardlinks-max", user_settings, settings)
+
+    result = subprocess.run(["find", temp_path, "-mindepth", "1", "!", "-type", "d", "-links",
+                             f"+{hardlinks_max}", "-printf", ".", "-quit"], check=True, capture_output=True)
 
     if len(result.stdout) > 0:
       raise AppError(f"{container_name} returned a file with too many hard links")

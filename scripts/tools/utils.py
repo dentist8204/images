@@ -5,18 +5,19 @@ from re import findall
 import subprocess
 import sys
 
+from defaults import defaults
 from errors import AppError, UsageError
 import schema
 
 def load_settings(container_name):
   if len(container_name) > 100:
     raise AppError("container name is too long")
-  elif findall(r"[^a-zA-Z0-9-_]", container_name):
+  elif findall(r"[^a-zA-Z0-9\-_]", container_name):
     raise AppError("container name has invalid characters")
 
   user_settings = load_json("user_settings", f"{Path.home()}/.config/prun/settings.json",
                             schema.USER_SETTINGS)
-  context_path  = f"{user_settings['context_path']}/{container_name}"
+  context_path  = f"{user_settings['context-path']}/{container_name}"
   settings      = load_json("settings", f"{context_path}/settings.json", schema.SETTINGS)
 
   return (user_settings, settings, context_path)
@@ -59,3 +60,12 @@ def run_main(main, tool_name):
   except UsageError as e:
     print(f"usage: {tool_name}", e, file=sys.stderr)
     sys.exit(2)
+
+def get_value(key, user_settings, settings=None):
+  if settings is not None and key in settings:
+    return settings[key]
+
+  if key in user_settings:
+    return user_settings[key]
+
+  return defaults[key]

@@ -17,11 +17,13 @@ def main():
 
   container_name                          = sys.argv[1]
   (user_settings, settings, context_path) = utils.load_settings(container_name)
-  container_source                        = f"{user_settings['registry']}/{container_name}"
+  container_source                        = f"{utils.get_value('registry', user_settings)}/{container_name}"
 
   result = subprocess.run(["cosign", "verify",
-                            f"--certificate-identity={user_settings['certificate-identity']}",
-                            f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
+                            f"--certificate-identity={utils.get_value('certificate-identity',
+                                                                      user_settings)}",
+                            f"--certificate-oidc-issuer={utils.get_value('certificate-oidc-issuer',
+                                                                         user_settings)}",
                             f"{container_source}:latest"], check=True, stdout=subprocess.PIPE, text=True)
 
   output = json.loads(result.stdout.strip())
