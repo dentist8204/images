@@ -19,11 +19,12 @@ def main():
   (user_settings, settings, context_path) = utils.load_settings(container_name)
   container_source                        = f"{utils.get_value('registry', user_settings)}/{container_name}"
 
+  certificate_identity    = utils.get_value('certificate-identity', user_settings)
+  certificate_oidc_issuer = utils.get_value('certificate-oidc-issuer', user_settings)
+
   result = subprocess.run(["cosign", "verify",
-                            f"--certificate-identity={utils.get_value('certificate-identity',
-                                                                      user_settings)}",
-                            f"--certificate-oidc-issuer={utils.get_value('certificate-oidc-issuer',
-                                                                         user_settings)}",
+                            f"--certificate-identity={certificate_identity}",
+                            f"--certificate-oidc-issuer={certificate_oidc_issuer}",
                             f"{container_source}:latest"], check=True, stdout=subprocess.PIPE, text=True)
 
   output = json.loads(result.stdout.strip())
@@ -51,8 +52,8 @@ def main():
     sys.exit(0)
 
   result = subprocess.run(["cosign", "verify-attestation", "--type=https://seccomp-profile.local",
-                            f"--certificate-identity={user_settings['certificate-identity']}",
-                            f"--certificate-oidc-issuer={user_settings['certificate-oidc-issuer']}",
+                            f"--certificate-identity={certificate_identity}",
+                            f"--certificate-oidc-issuer={certificate_oidc_issuer}",
                             f"{container_source}@{new_digest}"], check=True, stdout=subprocess.PIPE,
                           text=True)
 
