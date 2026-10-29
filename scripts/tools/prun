@@ -78,7 +78,6 @@ def main():
 
   volumes.sort()
 
-  # a safely sized tmpfs with a reasonable inode cap must be provided for proper resource isolation
   temp_path    = f"{user_settings['tmpfs-path']}/{container_id}"
   sandbox_path = os.path.abspath(f"{user_settings['sandbox-path']}/{container_name}")
   mount_parent = settings["mount-parent"]
