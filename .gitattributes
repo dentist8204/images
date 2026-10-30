@@ -1,4 +1,4 @@
-environments/** linguist-vendored
+tests/environments/** linguist-vendored
 
 .github/** linguist-detectable=true
 .github/** linguist-vendored=false
