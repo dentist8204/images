@@ -17,10 +17,12 @@ def main():
 
   container_name                          = sys.argv[1]
   (user_settings, settings, context_path) = utils.load_settings(container_name)
-  container_source                        = f"{utils.get_value('registry', user_settings)}/{container_name}"
 
+  registry                = utils.get_value('registry', user_settings)
   certificate_identity    = utils.get_value('certificate-identity', user_settings)
   certificate_oidc_issuer = utils.get_value('certificate-oidc-issuer', user_settings)
+
+  container_source = f"{registry}/{container_name}"
 
   result = subprocess.run(["cosign", "verify",
                             f"--certificate-identity={certificate_identity}",
@@ -114,7 +116,7 @@ def main():
                           text=True)
 
   new_reference = {
-    "registry": user_settings['registry'],
+    "registry": registry,
     "digest": new_digest
   }
 
