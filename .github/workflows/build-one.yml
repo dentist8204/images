@@ -34,8 +34,9 @@ jobs:
               - '.github/workflows/build-one.yml'
               - 'config/seccomp/**'
               - 'contexts/${{ inputs.image_name }}/**'
-              - 'environments/${{ inputs.image_name }}/**'
               - 'scripts/seccomp/**'
+              - 'tests/environments/${{ inputs.image_name }}/**'
+              - 'tests/scenarios/${{ inputs.image_name }}.json'
 
   build:
     runs-on: ubuntu-26.04
@@ -86,7 +87,7 @@ jobs:
           sudo useradd --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
           echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subuid
           echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subgid
-          sudo cp -r environments /home/${{ env.USERNAME }}
+          sudo cp -r tests /home/${{ env.USERNAME }}
           sudo mkdir -p /home/${{ env.USERNAME }}/config
           sudo cp -r config/seccomp /home/${{ env.USERNAME }}/config
           sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}

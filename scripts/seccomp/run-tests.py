@@ -15,7 +15,7 @@ if bpftrace_exit_code is not None and bpftrace_exit_code != 0:
 
 image_name = sys.argv[1]
 
-with open(f"tests/{image_name}/seccomp.json", "r", encoding="utf-8") as seccomp_tests_file:
+with open(f"tests/scenarios/{image_name}.json", "r", encoding="utf-8") as seccomp_tests_file:
   seccomp_tests = json.load(seccomp_tests_file)
 
 username     = sys.argv[3]
@@ -38,7 +38,7 @@ for i in range(0, len(seccomp_tests)):
                     "--userns=keep-id:uid=1007,gid=1007",
                     "--env=HOME=/mnt/workspace",
                     f"--security-opt=seccomp=/home/{username}/config/seccomp/default-docker-logged.json",
-                    f"--volume=/home/{username}/environments/{image_name}:/mnt/workspace",
+                    f"--volume=/home/{username}/tests/environments/{image_name}:/mnt/workspace",
                     f"{sys.argv[2]}/{image_name}{identifier}"]
   start_command  = ["podman", "start", container_name]
   logs_command   = ["timeout", "60s",
