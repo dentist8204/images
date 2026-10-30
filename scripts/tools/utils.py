@@ -11,7 +11,7 @@ import schema
 defaults = {
   "uid": 1007,
   "cpu-period": 100000,
-  "cpu-qouta": 400000,
+  "cpu-quota": 400000,
   "memory": 4096,       # mebibytes
   "disk-bps": 256,      # mebibytes
   "disk-iops": 50000,

@@ -44,7 +44,7 @@ def main():
 
   run_args.extend([f"--userns=keep-id:uid={uid},gid={uid}",
                    f"--cpu-period={utils.get_value('cpu-period', user_settings, settings)}",
-                   f"--cpu-quota={utils.get_value('cpu-qouta', user_settings, settings)}",
+                   f"--cpu-quota={utils.get_value('cpu-quota', user_settings, settings)}",
                    f"--memory={utils.get_value('memory', user_settings, settings)}m",
                    f"--device-read-bps={device_name}:{disk_bps}mb",
                    f"--device-write-bps={device_name}:{disk_bps}mb",
