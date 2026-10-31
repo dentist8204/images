@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python3 -EBs
 
 import os
 import secrets
