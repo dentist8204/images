@@ -47,7 +47,7 @@ def main():
     raise AppError(f"New digest has an unexpected format: {new_digest}")
 
   try:
-    current_digest = utils.load_json("reference", f"{context_path}/reference.json",
+    current_digest = utils.load_json("reference", context_path / "reference.json",
                                      schema.REFERENCE)["digest"]
   except FileNotFoundError:
     current_digest = "sha256:0"
