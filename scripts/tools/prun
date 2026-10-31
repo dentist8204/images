@@ -55,7 +55,10 @@ def main():
 
   digest = reference['digest']
 
-  run_args.append(f"--security-opt=seccomp={context_path}/{digest.split(':')[1]}/seccomp.json")
+  try:
+    run_args.append(f"--security-opt=seccomp={context_path}/{digest.split(':')[1]}/seccomp.json")
+  except IndexError:
+    raise AppError(f"reference.digest has an unexpected format: {digest}")
 
   volume_writable = {}
   volumes         = []
