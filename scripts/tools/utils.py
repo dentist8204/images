@@ -33,10 +33,10 @@ def load_settings(container_name):
 
   home_path = Path.home()
 
-  user_settings = load_json("user_settings", f"{home_path}/.config/prun/settings.json",
+  user_settings = load_json("user_settings", home_path / ".config" / "prun" / "settings.json",
                             schema.USER_SETTINGS)
-  context_path  = f"{home_path}/.local/share/prun/{container_name}"
-  settings      = load_json("settings", f"{context_path}/settings.json", schema.SETTINGS)
+  context_path  = home_path / ".local" / "share" / "prun" / container_name
+  settings      = load_json("settings", context_path / "settings.json", schema.SETTINGS)
 
   return (user_settings, settings, context_path)
 
