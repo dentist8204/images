@@ -81,10 +81,10 @@ def main():
 
   config_path = Path.home() / ".config" / "prun"
 
-  replacements = utils.load_json("replacements", f"{config_path}/replacements.json",
+  replacements = utils.load_json("replacements", config_path / "replacements.json",
                                  schema.A_DICT)
 
-  allowance  = set(utils.load_json("allowance", f"{config_path}/allowance.json", schema.A_DICT))
+  allowance  = set(utils.load_json("allowance", config_path / "allowance.json", schema.A_DICT))
   allowance -= set(replacements)
 
   for name in seccomp_profile["syscalls"][0]["names"]:
@@ -111,9 +111,11 @@ def main():
     if entry["args"] not in allowed:
       raise AppError(f"seccomp_profile.syscalls[{i}] is not a valid replacement: {entry}")
 
-  os.makedirs(f"{context_path}/{new_digest_value}", 0o700, exist_ok=True)
+  new_context_path = context_path / new_digest_value
 
-  with open(f"{context_path}/{new_digest_value}/seccomp.json", "w", encoding="utf-8") as output_file:
+  os.makedirs(new_context_path, 0o700, exist_ok=True)
+
+  with open(new_context_path / "seccomp.json", "w", encoding="utf-8") as output_file:
     json.dump(seccomp_profile, output_file, indent=2)
 
   subprocess.run(["podman", "pull", "--tls-verify", "--policy=always", f"{container_source}@{new_digest}"],
@@ -124,13 +126,15 @@ def main():
     "digest": new_digest
   }
 
-  with open(f"{context_path}/reference-staged.json", "w", encoding="utf-8") as output_file:
+  staged_reference_path = context_path / "reference-staged.json"
+
+  with open(staged_reference_path, "w", encoding="utf-8") as output_file:
     json.dump(new_reference, output_file, indent=2)
 
-  os.replace(f"{context_path}/reference-staged.json", f"{context_path}/reference.json")
+  os.replace(staged_reference_path, context_path / "reference.json")
 
   try:
-    shutil.rmtree(f"{context_path}/{current_digest_value}")
+    shutil.rmtree(context_path / current_digest_value)
   except FileNotFoundError:
     pass
 
