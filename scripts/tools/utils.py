@@ -31,9 +31,11 @@ def load_settings(container_name):
   elif not re.fullmatch(r"[a-z0-9]+((\.|_|__|-+)[a-z0-9]+)*", container_name):
     raise AppError("container name is invalid")
 
-  user_settings = load_json("user_settings", f"{Path.home()}/.config/prun/settings.json",
+  home_path = Path.home()
+
+  user_settings = load_json("user_settings", f"{home_path}/.config/prun/settings.json",
                             schema.USER_SETTINGS)
-  context_path  = f"{user_settings['context-path']}/{container_name}"
+  context_path  = f"{home_path}/.local/share/prun/{container_name}"
   settings      = load_json("settings", f"{context_path}/settings.json", schema.SETTINGS)
 
   return (user_settings, settings, context_path)

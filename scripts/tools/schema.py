@@ -3,7 +3,6 @@
 USER_SETTINGS = {
   "seccomp-config-path": "/home/user/repos/images/config/seccomp",
   "sandbox-path": "/home/user/.var/sandbox",
-  "context-path": "/home/user/.local/share/prun",
   "tmpfs-path": "/home/user/.var/mnt/prun", # needs a safe size and inode limit
   "disk-name": "/dev/nvme0n1"
 }
