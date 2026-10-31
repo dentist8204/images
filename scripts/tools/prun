@@ -54,7 +54,7 @@ def main():
 
   reference = utils.load_json("reference", context_path / "reference.json", schema.REFERENCE)
 
-  digest = reference['digest']
+  digest = reference["digest"]
 
   try:
     run_args.append(f"--security-opt=seccomp={context_path / digest.split(':')[1] / 'seccomp.json'}")
@@ -82,8 +82,8 @@ def main():
 
   volumes.sort()
 
-  temp_path    = Path(user_settings['tmpfs-path'], container_id)
-  sandbox_path = Path(user_settings['sandbox-path'], container_name)
+  temp_path    = Path(user_settings["tmpfs-path"], container_id)
+  sandbox_path = Path(user_settings["sandbox-path"], container_name)
   mount_parent = Path(settings["mount-parent"])
 
   for volume in volumes:

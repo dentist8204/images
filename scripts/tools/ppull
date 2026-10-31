@@ -19,9 +19,9 @@ def main():
   container_name                          = sys.argv[1]
   (user_settings, settings, context_path) = utils.load_settings(container_name)
 
-  registry                = utils.get_value('registry', user_settings)
-  certificate_identity    = utils.get_value('certificate-identity', user_settings)
-  certificate_oidc_issuer = utils.get_value('certificate-oidc-issuer', user_settings)
+  registry                = utils.get_value("registry", user_settings)
+  certificate_identity    = utils.get_value("certificate-identity", user_settings)
+  certificate_oidc_issuer = utils.get_value("certificate-oidc-issuer", user_settings)
 
   container_source = f"{registry}/{container_name}"
 
@@ -48,7 +48,7 @@ def main():
 
   try:
     current_digest = utils.load_json("reference", f"{context_path}/reference.json",
-                                     schema.REFERENCE)['digest']
+                                     schema.REFERENCE)["digest"]
   except FileNotFoundError:
     current_digest = "sha256:0"
 
@@ -70,7 +70,7 @@ def main():
 
   utils.check_structure("attest_output", output, schema.ATTEST_OUTPUT)
 
-  output = json.loads(base64.b64decode(output["payload"]).decode('utf-8'))
+  output = json.loads(base64.b64decode(output["payload"]).decode("utf-8"))
 
   utils.check_structure("attest_payload", output, schema.ATTEST_PAYLOAD)
 
