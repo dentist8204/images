@@ -1,6 +1,7 @@
 #!/usr/bin/python3 -B
 
 import os
+from pathlib import Path
 import secrets
 import subprocess
 import sys
@@ -51,12 +52,12 @@ def main():
                    f"--device-read-iops={device_name}:{disk_iops}",
                    f"--device-write-iops={device_name}:{disk_iops}"])
 
-  reference = utils.load_json("reference", f"{context_path}/reference.json", schema.REFERENCE)
+  reference = utils.load_json("reference", context_path / "reference.json", schema.REFERENCE)
 
   digest = reference['digest']
 
   try:
-    run_args.append(f"--security-opt=seccomp={context_path}/{digest.split(':')[1]}/seccomp.json")
+    run_args.append(f"--security-opt=seccomp={context_path / digest.split(':')[1] / 'seccomp.json'}")
   except IndexError:
     raise AppError(f"reference.digest has an unexpected format: {digest}")
 
@@ -81,15 +82,15 @@ def main():
 
   volumes.sort()
 
-  temp_path    = f"{user_settings['tmpfs-path']}/{container_id}"
-  sandbox_path = os.path.abspath(f"{user_settings['sandbox-path']}/{container_name}")
-  mount_parent = settings["mount-parent"]
+  temp_path    = Path(user_settings['tmpfs-path'], container_id)
+  sandbox_path = Path(user_settings['sandbox-path'], container_name)
+  mount_parent = Path(settings["mount-parent"])
 
   for volume in volumes:
     if (volume_writable[volume]):
-      run_args.append(f"--volume={temp_path}/{volume}:{mount_parent}/{volume}:Z,rw,nosuid,nodev")
+      run_args.append(f"--volume={temp_path / volume}:{mount_parent / volume}:Z,rw,nosuid,nodev")
     else:
-      run_args.append(f"--volume={sandbox_path}/{volume}:{mount_parent}/{volume}:Z,ro,nosuid,nodev")
+      run_args.append(f"--volume={sandbox_path / volume}:{mount_parent / volume}:Z,ro,nosuid,nodev")
 
   run_args.append(f"{reference['registry']}/{container_name}@{digest}")
   run_args.extend(sys.argv[2:])
