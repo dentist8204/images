@@ -1,7 +1,6 @@
 # all terminal values in the following schemas are only there as examples and do not effect validation
 
 USER_SETTINGS = {
-  "seccomp-config-path": "/home/user/repos/images/config/seccomp",
   "sandbox-path": "/home/user/.var/sandbox",
   "tmpfs-path": "/home/user/.var/mnt/prun", # needs a safe size and inode limit
   "disk-name": "/dev/nvme0n1"

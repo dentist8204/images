@@ -3,6 +3,7 @@
 import base64
 import json
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
@@ -78,12 +79,12 @@ def main():
   if seccomp_profile["defaultAction"] != "SCMP_ACT_ERRNO":
     raise AppError("pulled seccomp profile is not an allow list")
 
-  seccomp_config_path = user_settings["seccomp-config-path"]
+  config_path = Path.home() / ".config" / "prun"
 
-  replacements = utils.load_json("replacements", f"{seccomp_config_path}/replacements.json",
+  replacements = utils.load_json("replacements", f"{config_path}/replacements.json",
                                  schema.A_DICT)
 
-  allowance  = set(utils.load_json("allowance", f"{seccomp_config_path}/allowance.json", schema.A_DICT))
+  allowance  = set(utils.load_json("allowance", f"{config_path}/allowance.json", schema.A_DICT))
   allowance -= set(replacements)
 
   for name in seccomp_profile["syscalls"][0]["names"]:
