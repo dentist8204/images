@@ -90,9 +90,7 @@ def main():
     if name not in allowance:
       raise AppError(f"pulled seccomp profile allows denied syscall: {name}")
 
-  for i in range(1, len(seccomp_profile["syscalls"])):
-    entry = seccomp_profile["syscalls"][i]
-
+  for i, entry in enumerate(seccomp_profile["syscalls"][1:], start=1):
     action = entry["action"]
 
     if action == "SCMP_ACT_ERRNO":
