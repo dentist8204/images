@@ -116,9 +116,8 @@ def main():
   with open(f"{context_path}/{new_digest_value}/seccomp.json", "w", encoding="utf-8") as output_file:
     json.dump(seccomp_profile, output_file, indent=2)
 
-  result = subprocess.run(["podman", "pull", "--tls-verify", "--policy=always", "--quiet",
-                            f"{container_source}@{new_digest}"], check=True, stdout=subprocess.PIPE,
-                          text=True)
+  subprocess.run(["podman", "pull", "--tls-verify", "--policy=always", f"{container_source}@{new_digest}"],
+                 check=True)
 
   new_reference = {
     "registry": registry,
