@@ -79,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman python3 skopeo
+          sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman python3
       - name: Setup Temporary User
         run: |
           set -euo pipefail
@@ -100,6 +100,9 @@ jobs:
       - name: Upload and Sign the Seccomp Profile
         if: ${{ inputs.push }}
         run: cosign attest --predicate seccomp-profile.json --type https://seccomp-profile.local --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}
+      - name: Install crane
+        if: ${{ inputs.push }}
+        run: go install github.com/google/go-containerregistry/cmd/crane@8a72a424fdecb4caa14f2d525e5d2503331442b5 # v0.22.1
       - name: Add latest Tag
         if: ${{ inputs.push }}
-        run: skopeo copy docker://${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }} docker://${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}:latest
+        run: crane tag ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }} latest
