@@ -105,4 +105,4 @@ jobs:
         run: go install github.com/google/go-containerregistry/cmd/crane@8a72a424fdecb4caa14f2d525e5d2503331442b5 # v0.22.1
       - name: Add latest Tag
         if: ${{ inputs.push }}
-        run: crane tag ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }} latest
+        run: $(go env GOPATH)/bin/crane tag ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }} latest
