@@ -61,7 +61,7 @@ jobs:
         id: build-push
         with:
           context: contexts/${{ inputs.image_name }}
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}:latest
+          tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}:staged
           push: ${{ inputs.push }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -79,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman python3
+          sudo apt-get install -y --no-install-recommends auditd bpftrace crun podman python3 skopeo
       - name: Setup Temporary User
         run: |
           set -euo pipefail
@@ -100,3 +100,6 @@ jobs:
       - name: Upload and Sign the Seccomp Profile
         if: ${{ inputs.push }}
         run: cosign attest --predicate seccomp-profile.json --type https://seccomp-profile.local --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}
+      - name: Add latest Tag
+        if: ${{ inputs.push }}
+        run: skopeo copy docker://${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }} docker://${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}:latest
