@@ -4,8 +4,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
       time: "20:56"
     cooldown:
       default-days: 5
@@ -20,8 +19,7 @@ updates:
       - "/contexts/antlr"
       - "/contexts/latex"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
       time: "20:56"
     cooldown:
       default-days: 5
