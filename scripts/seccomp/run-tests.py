@@ -4,15 +4,6 @@ import subprocess
 import sys
 import time
 
-bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/seccomp/trace-logs.bt"])
-
-time.sleep(5)
-
-bpftrace_exit_code = bpftrace.poll()
-
-if bpftrace_exit_code is not None and bpftrace_exit_code != 0:
-  sys.exit(1)
-
 image_name = sys.argv[1]
 
 with open(f"tests/scenarios/{image_name}.json", "r", encoding="utf-8") as seccomp_tests_file:
@@ -43,7 +34,7 @@ for i in range(0, len(seccomp_tests)):
   start_command  = ["podman", "start", container_name]
   logs_command   = ["timeout", "60s",
                     "podman", "logs", "-f", container_name]
-  kill_command   = ["podman", "kill", container_name]
+  stop_command   = ["podman", "stop", "--time=3", container_name]
   wait_command   = ["podman", "wait", "--condition=removing", container_name]
   
   create_command = sudo_command + create_command
@@ -57,11 +48,5 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(create_command, cwd=f"{user_home}", check=True)
   subprocess.run(start_command, cwd=f"{user_home}", check=True)
   subprocess.run(logs_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
-  subprocess.run(kill_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
+  subprocess.run(stop_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
   subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
-
-time.sleep(5)
-
-subprocess.run(["sudo", "pkill", "-INT", "bpftrace"], check=True)
-
-bpftrace.wait()
