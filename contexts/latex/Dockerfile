@@ -1,5 +1,5 @@
 FROM docker.io/alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
 
-RUN apk add --no-cache texlive texlive-latexrecommended texlive-latexextra texlive-pictures
+RUN apk add --no-cache texlive texlive-latexextra texlive-latexrecommended texlive-mathscience texlive-pictures
 
 LABEL org.opencontainers.image.description="Alpine image with Tex Live installed"
