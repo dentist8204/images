@@ -57,34 +57,34 @@ if len(sys.argv) > 5:
 else:
   identifier = ":latest"
 
+create_command =\
+sudo_command + ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
+                "--workdir=/mnt/workspace/entry", "--userns=keep-id:uid=1007,gid=1007",
+                "--env=HOME=/mnt/workspace",
+                f"--security-opt=seccomp=/home/{username}/config/seccomp/default-docker-logged.json",
+                f"--volume=/home/{username}/tests/environments/{image_name}:/mnt/workspace",
+                f"{sys.argv[2]}/{image_name}{identifier}"])
+
+start_command = sudo_command + ["podman", "start"]
+logs_command  = sudo_command + ["timeout", "60s", "podman", "logs", "-f"]
+kill_command  = sudo_command + ["podman", "kill"]
+wait_command  = sudo_command + ["podman", "wait", "--condition=removing"]
+
 for i in range(0, len(seccomp_tests)):
   container_name = f"container_name_{i}"
+
+  create_command_i = create_command + [f"--name={container_name}"]
+  create_command_i.extend(seccomp_tests[i])
+
+  start_command_i = start_command + [container_name]
+  logs_command_i  = logs_command  + [container_name]
+  kill_command_i  = kill_command  + [container_name]
+  wait_command_i  = wait_command  + [container_name]
   
-  create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
-                    "--workdir=/mnt/workspace/entry", f"--name={container_name}",
-                    "--userns=keep-id:uid=1007,gid=1007",
-                    "--env=HOME=/mnt/workspace",
-                    f"--security-opt=seccomp=/home/{username}/config/seccomp/default-docker-logged.json",
-                    f"--volume=/home/{username}/tests/environments/{image_name}:/mnt/workspace",
-                    f"{sys.argv[2]}/{image_name}{identifier}"]
-  start_command  = ["podman", "start", container_name]
-  logs_command   = ["timeout", "60s",
-                    "podman", "logs", "-f", container_name]
-  kill_command   = ["podman", "kill", container_name]
-  wait_command   = ["podman", "wait", "--condition=removing", container_name]
-  
-  create_command = sudo_command + create_command
-  start_command  = sudo_command + start_command
-  logs_command   = sudo_command + logs_command
-  kill_command   = sudo_command + kill_command
-  wait_command   = sudo_command + wait_command
-  
-  create_command.extend(seccomp_tests[i])
-  
-  subprocess.run(create_command, cwd=f"{user_home}", check=True)
-  subprocess.run(start_command, cwd=f"{user_home}", check=True)
-  subprocess.run(logs_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
-  subprocess.run(kill_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
-  subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
+  subprocess.run(create_command_i, cwd=f"{user_home}", check=True)
+  subprocess.run(start_command_i, cwd=f"{user_home}", check=True)
+  subprocess.run(logs_command_i, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
+  subprocess.run(kill_command_i, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
+  subprocess.run(wait_command_i, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
 bpftrace.wait(timeout=timeout)
