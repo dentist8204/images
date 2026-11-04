@@ -63,7 +63,7 @@ sudo_command + ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
                 "--env=HOME=/mnt/workspace",
                 f"--security-opt=seccomp=/home/{username}/config/seccomp/default-docker-logged.json",
                 f"--volume=/home/{username}/tests/environments/{image_name}:/mnt/workspace",
-                f"{sys.argv[2]}/{image_name}{identifier}"])
+                f"{sys.argv[2]}/{image_name}{identifier}"]
 
 start_command = sudo_command + ["podman", "start"]
 logs_command  = sudo_command + ["timeout", "60s", "podman", "logs", "-f"]
