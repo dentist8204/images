@@ -8,9 +8,11 @@ kprobe:audit_seccomp
 {
   /* SECCOMP_RET_LOG defined in include/uapi/linux/seccomp.h */
   if (arg2 == 0x7ffc0000) {
+    /* start tracking on the thread that calls seccomp() */
     if (!@tracked[tid]) {
       @tracked[tid] = 1;
 
+      @tracked_containers[0]++;
       @tracked_count[0]++;
     }
 

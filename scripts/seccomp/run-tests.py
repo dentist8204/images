@@ -18,11 +18,7 @@ trace_script += f'''
 
   @tracked_count[0]--;
 
-  if (@tracked_count[0] == 0) {{
-    @exit_count[0]++;
-  }}
-
-  if (@exit_count[0] == {len(seccomp_tests)}) {{
+  if (@tracked_containers[0] == {len(seccomp_tests)} && @tracked_count[0] == 0) {{
     printf("DONE\\n");
     exit();
   }}
@@ -93,7 +89,6 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(wait_command_i, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
 start_time = time.time()
-timeout    = 60
 
 while True:
   try:
