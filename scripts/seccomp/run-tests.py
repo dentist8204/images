@@ -22,7 +22,7 @@ else:
 
 for i in range(0, len(seccomp_tests)):
   container_name = f"container_name_{i}"
-  
+
   create_command = ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
                     "--workdir=/mnt/workspace/entry", f"--name={container_name}",
                     "--userns=keep-id:uid=1007,gid=1007",
@@ -35,15 +35,15 @@ for i in range(0, len(seccomp_tests)):
                     "podman", "logs", "-f", container_name]
   stop_command   = ["podman", "stop", "--time=3", container_name]
   wait_command   = ["podman", "wait", "--condition=removing", container_name]
-  
+
   create_command = sudo_command + create_command
   start_command  = sudo_command + start_command
   logs_command   = sudo_command + logs_command
   stop_command   = sudo_command + stop_command
   wait_command   = sudo_command + wait_command
-  
+
   create_command.extend(seccomp_tests[i])
-  
+
   subprocess.run(create_command, cwd=f"{user_home}", check=True)
   subprocess.run(start_command, cwd=f"{user_home}", check=True)
   subprocess.run(logs_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
@@ -56,7 +56,7 @@ result = subprocess.run("sudo ausearch -m SECCOMP | grep 'code=0x7ffc0000'", che
 syscalls = re.findall(r'sig=(\d+).*syscall=(\d+)', result.stdout)
 
 success = set(syscall for (sig, syscall) in syscalls if sig == "0")
-failure = dict(syscall: sig for (sig, syscall) in syscalls if sig != "0")
+failure = {syscall: sig for (sig, syscall) in syscalls if sig != "0"}
 
 with open("syscalls.txt", "w", encoding="utf-8") as output_file:
   for syscall in success:
