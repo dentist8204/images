@@ -16,9 +16,13 @@ tracepoint:sched:sched_process_exit
   /@tracked[tid]/ {{
   delete(@tracked[tid]);
 
-  @tracked_count[0]--;
+  if (@main_thread[tid]) {{
+    @container_count[0]++;
 
-  if (@tracked_containers[0] == {len(seccomp_tests)} && @tracked_count[0] == 0) {{
+    delete(@main_thread[tid]);
+  }}
+
+  if (@container_count[0] == {len(seccomp_tests)}) {{
     printf("DONE\\n");
     exit();
   }}

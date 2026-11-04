@@ -12,10 +12,8 @@ kprobe:audit_seccomp
     if (!@tracked[tid]) {
       @tracked[tid] = 1;
 
-      @tracked_count[0]++;
-
       if (tid == pid) {
-        @tracked_containers[0]++;
+        @main_thread[tid] = 1;
       }
     }
 
@@ -44,10 +42,10 @@ tracepoint:sched:sched_process_fork
 /@tracked[tid]/
 {
   @tracked[args->child_pid] = 1;
-  @tracked_count[0]++;
 }
 
 tracepoint:sched:sched_process_exit
+/@logged[tid]/
 {
   delete(@logged[tid]);
 }
