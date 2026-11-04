@@ -8,6 +8,12 @@ kprobe:audit_seccomp
 {
   /* SECCOMP_RET_LOG defined in include/uapi/linux/seccomp.h */
   if (arg2 == 0x7ffc0000) {
+    /* pin the first logged process to track container lifetime */
+    if (!@pinned) {
+      @pinned     = 1;
+      @pinned_pid = tgid;
+    }
+
     /* exit and exit_group */
     if (arg0 == 60 || arg0 == 231) {
       @[arg0] = 1;
