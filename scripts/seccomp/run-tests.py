@@ -23,7 +23,7 @@ trace_script += f'''
   }}
 
   if (@exit_count[0] == {len(seccomp_tests)}) {{
-    printf("DONE\n");
+    printf("DONE\\n");
     exit();
   }}
 }}
