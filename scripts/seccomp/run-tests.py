@@ -12,11 +12,13 @@ with open(f"scripts/seccomp/trace-logs.bt", "r", encoding="utf-8") as trace_file
   trace_script = trace_file.read()
 
 trace_script += f'''
-  tracepoint:sched:sched_process_exit
+tracepoint:sched:sched_process_exit
   /@tracked[tid]/ {{
   delete(@tracked[tid]);
 
   @tracked_count[0]--;
+
+  printf("@tracked_containers: %d, @tracked_count: %d\n", @tracked_containers[0], @tracked_count[0]);
 
   if (@tracked_containers[0] == {len(seccomp_tests)} && @tracked_count[0] == 0) {{
     printf("DONE\\n");
