@@ -12,7 +12,7 @@ with open(f"scripts/seccomp/trace-logs.bt", "r", encoding="utf-8") as trace_file
   trace_script = trace_file.read()
 
 trace_script += f'''
-  tracepoint:sched_process_exit
+  tracepoint:sched:sched_process_exit
   /comm == "conmon"/ {{
   @exit_count++;
 
