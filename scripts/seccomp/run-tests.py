@@ -50,15 +50,17 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(stop_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
   subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
-result = subprocess.run(["sudo ausearch -m SECCOMP | grep 'code=0x7ffc0000'"], check=True, shell=True,
+result = subprocess.run("sudo ausearch -m SECCOMP | grep 'code=0x7ffc0000'", check=True, shell=True,
                         capture_output=True)
 
 syscalls = re.findall(r'sig=(\d+).*syscall=(\d+)', result.stdout)
 
-with open("syscalls.txt", "w", encoding="utf-8") as output_file:
-  for (sig, syscall) in syscalls:
-    if sig == "0":
-      output_file.write(f"@[{syscall}]: 1\n")
-    else:
-      output_file.write(f"@error[{syscall}]: {sig}\n")
+success = set(syscall for (sig, syscall) in syscalls if sig == "0")
+failure = dict(syscall: sig for (sig, syscall) in syscalls if sig != "0")
 
+with open("syscalls.txt", "w", encoding="utf-8") as output_file:
+  for syscall in success:
+    output_file.write(f"@[{syscall}]: 1\n")
+
+  for (syscall, sig) in failure.items():
+    output_file.write(f"@error[{syscall}]: {sig}\n")
