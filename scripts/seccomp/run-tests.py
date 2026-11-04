@@ -18,8 +18,6 @@ tracepoint:sched:sched_process_exit
 
   @tracked_count[0]--;
 
-  printf("@tracked_containers: %d, @tracked_count: %d\n", @tracked_containers[0], @tracked_count[0]);
-
   if (@tracked_containers[0] == {len(seccomp_tests)} && @tracked_count[0] == 0) {{
     printf("DONE\\n");
     exit();
