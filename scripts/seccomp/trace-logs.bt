@@ -1,3 +1,8 @@
+BEGIN
+{
+  printf("READY\n");
+}
+
 /* defined in kernel/auditsc.c */
 kprobe:audit_seccomp
 {

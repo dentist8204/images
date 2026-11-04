@@ -1,22 +1,47 @@
 import json
-import os
 import subprocess
 import sys
 import time
-
-bpftrace = subprocess.Popen(["sudo", "bpftrace", "-o", "syscalls.txt", "scripts/seccomp/trace-logs.bt"])
-
-time.sleep(5)
-
-bpftrace_exit_code = bpftrace.poll()
-
-if bpftrace_exit_code is not None and bpftrace_exit_code != 0:
-  sys.exit(1)
 
 image_name = sys.argv[1]
 
 with open(f"tests/scenarios/{image_name}.json", "r", encoding="utf-8") as seccomp_tests_file:
   seccomp_tests = json.load(seccomp_tests_file)
+
+with open(f"scripts/seccomp/trace-logs.bt", "r", encoding="utf-8") as trace_file:
+  trace_script = trace_file.read()
+
+trace_script += f'''
+  tracepoint:sched_process_exit
+  /comm == "conmon"/ {{
+  @exit_count++;
+
+  if (@exit_count == {len(seccomp_tests)}) {{
+    exit();
+  }}
+}}
+'''
+
+output_file_name = "syscalls.txt"
+
+bpftrace   = subprocess.Popen(["sudo", "bpftrace", "-e", trace_script, "-o", output_file_name])
+start_time = time.time()
+timeout    = 20
+
+while True:
+  try:
+    with open(output_file_name, "r", encoding="utf-8") as output_file:
+      if "READY" in output_file.read():
+        break
+  except FileNotFoundError:
+    pass
+
+  if time.time() - start_time > timeout:
+    bpftrace.terminate()
+
+    sys.exit(f"bpftrace took more than {timeout} seconds to initialize")
+
+  time.sleep(0.1)
 
 username     = sys.argv[3]
 user_home    = f"/home/{username}"
@@ -60,8 +85,4 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(kill_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
   subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
-time.sleep(5)
-
-subprocess.run(["sudo", "pkill", "-INT", "bpftrace"], check=True)
-
-bpftrace.wait()
+bpftrace.wait(timeout=timeout)
