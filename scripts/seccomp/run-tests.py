@@ -50,8 +50,7 @@ for i in range(0, len(seccomp_tests)):
   subprocess.run(stop_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
   subprocess.run(wait_command, cwd=f"{user_home}", stderr=subprocess.DEVNULL)
 
-result = subprocess.run("sudo ausearch -m SECCOMP | grep 'code=0x7ffc'", check=True, shell=True,
-                        capture_output=True)
+result = subprocess.run(["sudo", "ausearch", "-m", "SECCOMP"], check=True, capture_output=True)
 
 syscalls = re.findall(r'sig=(\d+).*syscall=(\d+)', result.stdout)
 
