@@ -62,8 +62,7 @@ sudo_command + ["podman", "create", "--runtime=crun", "--cap-drop=all", "--rm",
                 "--workdir=/mnt/workspace/entry", "--userns=keep-id:uid=1007,gid=1007",
                 "--env=HOME=/mnt/workspace",
                 f"--security-opt=seccomp=/home/{username}/config/seccomp/default-docker-logged.json",
-                f"--volume=/home/{username}/tests/environments/{image_name}:/mnt/workspace",
-                f"{sys.argv[2]}/{image_name}{identifier}"]
+                f"--volume=/home/{username}/tests/environments/{image_name}:/mnt/workspace"]
 
 start_command = sudo_command + ["podman", "start"]
 logs_command  = sudo_command + ["timeout", "60s", "podman", "logs", "-f"]
@@ -73,7 +72,7 @@ wait_command  = sudo_command + ["podman", "wait", "--condition=removing"]
 for i in range(0, len(seccomp_tests)):
   container_name = f"container_name_{i}"
 
-  create_command_i = create_command + [f"--name={container_name}"]
+  create_command_i = create_command + [f"--name={container_name}", f"{sys.argv[2]}/{image_name}{identifier}"]
   create_command_i.extend(seccomp_tests[i])
 
   start_command_i = start_command + [container_name]
