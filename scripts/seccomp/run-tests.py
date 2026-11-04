@@ -13,7 +13,7 @@ with open(f"scripts/seccomp/trace-logs.bt", "r", encoding="utf-8") as trace_file
 
 trace_script += f'''
   tracepoint:sched:sched_process_exit
-  /pinned && tgid == pinned_pid && tid == tgid/ {{
+  /@pinned && tgid == @pinned_pid && tid == tgid/ {{
   @exit_count++;
 
   if (@exit_count == {len(seccomp_tests)}) {{
