@@ -92,6 +92,8 @@ jobs:
           sudo cp -r config/seccomp /home/${{ env.USERNAME }}/config
           sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}
           sudo loginctl enable-linger ${{ env.USERNAME }}
+      - name: Start auditd
+        run: sudo systemctl start auditd
       - name: Run Scripts
         run: |
           set -euo pipefail
