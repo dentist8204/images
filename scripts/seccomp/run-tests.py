@@ -39,7 +39,7 @@ for i in range(0, len(seccomp_tests)):
   create_command = sudo_command + create_command
   start_command  = sudo_command + start_command
   logs_command   = sudo_command + logs_command
-  kill_command   = sudo_command + kill_command
+  stop_command   = sudo_command + stop_command
   wait_command   = sudo_command + wait_command
   
   create_command.extend(seccomp_tests[i])
