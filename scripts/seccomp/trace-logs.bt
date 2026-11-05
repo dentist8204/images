@@ -43,7 +43,7 @@ tracepoint:sched:sched_process_exit
 tracepoint:cgroup:cgroup_rmdir
 /@cgroup_ids[args->id]/
 {
-  delete(@cgroup_ids[args->id])
+  delete(@cgroup_ids[args->id]);
 
   @container_count[0]++;
 
