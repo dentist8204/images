@@ -59,17 +59,16 @@ for id_ in allowed_ids:
       syscalls.append({
         "names": [name],
         "action": "SCMP_ACT_ALLOW",
-        "args": rule["args"],
-        "comment": rule["comment"]
+        "args": rule["args"]
       })
 
     blocked_names.add(name)
+  # make it visible when something was used but not allowed
   elif name not in allowance:
     syscalls.append({
       "names": [name],
       "action": "SCMP_ACT_ERRNO",
-      "errnoRet": 1,
-      "comment": "disallow to cause failure"
+      "errnoRet": 1
     })
 
     blocked_names.add(name)
@@ -82,6 +81,7 @@ syscalls[0]["names"].sort()
 blocked_ids = re.findall(r"@error\[(\d+)\]: (\d+)", input_)
 blocked_ids = [id_ for id_ in blocked_ids if id_[0] not in allowed_ids]
 
+# mimic traced errors
 for (id_, errnoRet) in blocked_ids:
   result = subprocess.run(["ausyscall", "x86_64", id_], capture_output=True, text=True, check=True)
 
@@ -95,21 +95,20 @@ for (id_, errnoRet) in blocked_ids:
   syscalls.append({
     "names": [name],
     "action": "SCMP_ACT_ERRNO",
-    "errnoRet": int(errnoRet),
-    "comment": "disallow because it returned this errno while being logged"
+    "errnoRet": int(errnoRet)
   })
 
 all_names = allowed_names | blocked_names
 
+# mimic inconsistently traced errors
 with open("config/seccomp/baseline-replacements.json", "r", encoding="utf-8") as baseline_replacements_file:
   for (name, errnoRet) in json.load(baseline_replacements_file).items():
     if name not in all_names:
         syscalls.append({
           "names": [name],
           "action": "SCMP_ACT_ERRNO",
-          "errnoRet": errnoRet,
-          "comment": "disallow because it sometimes returns this errno while being logged"
+          "errnoRet": errnoRet
         })
 
 with open("seccomp-profile.json", "w", encoding="utf-8") as output_file:
-  json.dump(seccomp_profile, output_file, indent=2)
+  json.dump(seccomp_profile, output_file, separators=(",", ":"))
