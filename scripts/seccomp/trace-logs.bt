@@ -50,3 +50,20 @@ tracepoint:sched:sched_process_exit
 {
   delete(@logged[tid]);
 }
+
+tracepoint:sched:sched_process_exit
+/@tracked[tid]/
+{
+  delete(@tracked[tid]);
+
+  if (@main_thread[tid]) {
+    @container_count[0]++;
+
+    delete(@main_thread[tid]);
+  }
+
+  if (@container_count[0] == @@CONTAINER_COUNT@@) {
+    printf("DONE\\n");
+    exit();
+  }
+}
