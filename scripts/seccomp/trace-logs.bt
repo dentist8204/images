@@ -1,5 +1,4 @@
 #include <asm/unistd.h>
-#include <linux/seccomp.h>
 
 BEGIN
 {
