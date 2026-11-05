@@ -45,9 +45,9 @@ tracepoint:cgroup:cgroup_rmdir
 {
   delete(@cgroup_ids[args->id])
 
-  @container_count++;
+  @container_count[0]++;
 
-  if (@container_count == ~CONTAINER_COUNT~) {
+  if (@container_count[0] == ~CONTAINER_COUNT~) {
     printf("DONE\n");
     exit();
   }
