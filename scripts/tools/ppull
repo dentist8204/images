@@ -147,7 +147,7 @@ def load_jsons(name, raw_data, schema_):
 
   try:
     json_data = json.loads(raw_data)
-  except (json.JSONDecodeError) as e:
+  except json.JSONDecodeError as e:
     raise AppError(f"{name}: {e}")
 
   utils.check_structure(name, json_data, schema_)
