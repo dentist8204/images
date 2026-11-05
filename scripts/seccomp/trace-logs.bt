@@ -1,3 +1,6 @@
+#include <asm/unistd.h>
+#include <linux/seccomp.h>
+
 BEGIN
 {
   printf("READY\n");
@@ -6,8 +9,7 @@ BEGIN
 /* defined in kernel/auditsc.c */
 kprobe:audit_seccomp
 {
-  /* SECCOMP_RET_LOG defined in include/uapi/linux/seccomp.h */
-  if (arg2 == 0x7ffc0000) {
+  if (arg2 == SECCOMP_RET_LOG) {
     /* start tracking on the thread group that calls seccomp() */
     if (!@tracked[tid]) {
       @tracked[tid] = 1;
@@ -17,8 +19,7 @@ kprobe:audit_seccomp
       }
     }
 
-    /* exit and exit_group */
-    if (arg0 == 60 || arg0 == 231) {
+    if (arg0 == __NR_exit || arg0 == __NR_exit_group) {
       @[arg0] = 1;
     } else {
       @logged[tid] = arg0 + 1;
