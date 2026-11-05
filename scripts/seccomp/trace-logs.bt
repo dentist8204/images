@@ -12,14 +12,7 @@ BEGIN
 kprobe:audit_seccomp
 {
   if (arg2 == SECCOMP_RET_LOG) {
-    /* start tracking on the thread group that calls seccomp() */
-    if (!@tracked[tid]) {
-      @tracked[tid] = 1;
-
-      if (tid == pid) {
-        @main_thread[tid] = 1;
-      }
-    }
+    @cgroup_ids[cgroup] = 1;
 
     if (arg0 == __NR_exit || arg0 == __NR_exit_group) {
       @[arg0] = 1;
@@ -41,31 +34,21 @@ tracepoint:raw_syscalls:sys_exit
   delete(@logged[tid]);
 }
 
-tracepoint:sched:sched_process_fork
-/@tracked[tid]/
-{
-  @tracked[args->child_pid] = 1;
-}
-
 tracepoint:sched:sched_process_exit
 /@logged[tid]/
 {
   delete(@logged[tid]);
 }
 
-tracepoint:sched:sched_process_exit
-/@tracked[tid]/
+tracepoint:cgroup:cgroup_rmdir
+/@cgroup_ids[args->id]/
 {
-  delete(@tracked[tid]);
+  delete(@cgroup_ids[args->id])
 
-  if (@main_thread[tid]) {
-    @container_count[0]++;
+  @container_count++;
 
-    delete(@main_thread[tid]);
-  }
-
-  if (@container_count[0] == ~CONTAINER_COUNT~) {
-    printf("DONE\\n");
+  if (@container_count == ~CONTAINER_COUNT~) {
+    printf("DONE\n");
     exit();
   }
 }
