@@ -64,7 +64,7 @@ tracepoint:sched:sched_process_exit
     delete(@main_thread[tid]);
   }
 
-  if (@container_count[0] == @@CONTAINER_COUNT@@) {
+  if (@container_count[0] == ~CONTAINER_COUNT~) {
     printf("DONE\\n");
     exit();
   }
