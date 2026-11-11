@@ -40,14 +40,14 @@ VERIFY_OUTPUT = { "type": list, "entry": { "type": dict, "items": {
   "optional": { "type": dict, "strict": False }
 }}}
 
-ATTEST_OUTPUT = {
+ATTEST_OUTPUT = { "type": dict, "items": {
   "payload": { "type": bytes, "strict": True },
   "payloadType": { "type": bytes, "strict": False },
 
   "signatures": { "type": list, "strict": False }
-}
+}}
 
-ATTEST_PAYLOAD = {
+ATTEST_PAYLOAD = { "type": dict, "items": {
   "_type": { "type": bytes, "strict": False },
   "predicateType": { "type": bytes, "strict": False },
 
@@ -68,10 +68,10 @@ ATTEST_PAYLOAD = {
   }},
 
   "subject": { "type": list, "strict": False }
-}
+}}
 
-REFERENCE = {
+REFERENCE = { "type": dict, "items": {
   "registry": { "type": bytes, "strict": True, "pattern": rb"[^\x00\s]+" },
   # https://github.com/opencontainers/image-spec/blob/13cff54902ec9ad6320cbc487a685b66fcd67171/descriptor.md#digests
   "digest": { "type": bytes, "strict": True, "pattern": rb"[a-z0-9]+([+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+"}
-}
+}}

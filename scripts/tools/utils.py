@@ -50,19 +50,41 @@ def load_json(name, file_path, schema_):
 
     return json_data
 
-def check_structure(name, data, schema_):
-  if type(data) is not type(schema_):
-    raise AppError(f"{name} is not a {type(schema_).__name__}")
+def validate_data(name, data, schema_):
+  if isinstance(data, str):
+    data = data.encode("utf-8")
 
-  if isinstance(schema_, dict):
-    for (key, expected_type) in schema_.items():
-      if key not in data:
-        raise AppError(f"{name}.{key} is missing")
+  required_type = schema_["type"]
 
-      check_structure(f"{name}.{key}", data[key], expected_type)
-  elif isinstance(schema_, list):
-    for i in range(0, len(data)):
-      check_structure(f"{name}[{i}]", data[i], schema_[0])
+  if not isinstance(data, required_type):
+    raise AppError(f"{name} is not type {required_type.__name__}")
+
+  match data:
+    case dict():
+      if "items" in schema_:
+        items_schema = schema_["items"]
+
+        for (key, value) in items_schema.items():
+          if value["strict"] and key not in data:
+            raise AppError(f"{name}.{key} is missing")
+
+        for (key, value) in data.items():
+          if key not in schema_:
+            raise AppError(f"{name}.{key} is an unknown key")
+
+          validate_data(f"{name}.{key}", value, items_schema[key])
+   case list():
+     if "entry" in schema_:
+       entry_schema = schema_["entry"]
+
+       for (i, entry) in enumerate(data):
+         validate_data(f"{name}[{i}]", entry, entry_schema)
+   case int():
+     if "min" in schema_ and data < schema_["min"]:
+       raise AppError(f"{name} < {schema_['min']}")
+   case bytes():
+     if "pattern" in schema_ and not re.fullmatch(schema_["pattern"], data):
+       raise AppError(f"{name} does not match regex")
 
 def run_main(main, tool_name):
   try:
