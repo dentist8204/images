@@ -38,7 +38,7 @@ jobs:
           if git commit -m 'Update ${{ env.PROFILE_PATH }}'; then
             git push origin "$BRANCH_NAME"
             
-            gh pr create --title "Update Docker Profile" --base main --head "$BRANCH_NAME"
+            gh pr create --fill --base main --head "$BRANCH_NAME"
           else
             echo "Profile unchanged"
           fi
