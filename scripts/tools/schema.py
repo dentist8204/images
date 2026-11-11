@@ -2,7 +2,6 @@
 
 USER_SETTINGS = {
   "sandbox-path": "/home/user/.var/sandbox",
-  "tmpfs-path": "/home/user/.var/mnt/prun", # needs a safe size and inode limit
   "disk-name": "/dev/nvme0n1"
 }
 
