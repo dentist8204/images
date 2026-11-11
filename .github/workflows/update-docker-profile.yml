@@ -41,5 +41,6 @@ jobs:
             gh pr create --title "Update Docker Profile" --base main --head "$BRANCH_NAME"
           else
             echo "Profile unchanged"
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
