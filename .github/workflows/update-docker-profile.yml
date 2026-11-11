@@ -1,0 +1,45 @@
+name: Update Docker Profile
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 18 * * *'
+
+concurrency:
+  group: update-docker-profile-${{ github.event_name }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  PROFILE_PATH: config/seccomp/default-docker-logged.json
+
+jobs:
+  update-docker-profile:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Update Docker Profile
+        run: |
+          set -euxo pipefail
+          
+          curl -L https://raw.githubusercontent.com/moby/profiles/main/seccomp/default.json -o "${{ env.PROFILE_PATH }}"
+
+          sed -i 's/SCMP_ACT_ALLOW/SCMP_ACT_LOG/g' "${{ env.PROFILE_PATH }}"
+          
+          BRANCH_NAME='update-docker-profile-${{ github.run_id }}'
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git switch -c "$BRANCH_NAME"
+          git add "${{ env.PROFILE_PATH }}"
+
+          if git commit -m 'Update ${{ env.PROFILE_PATH }}'; then
+            git push origin "$BRANCH_NAME"
+            
+            gh pr create --title "Update Docker Profile" --base main --head "$BRANCH_NAME"
+          else
+            echo "Profile unchanged"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
