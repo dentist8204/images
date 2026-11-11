@@ -17,14 +17,16 @@ def main():
   container_name = sys.argv[1]
   container_id   = "prun.id." + secrets.token_urlsafe(16)
   run_args       = ["podman", "create", "--rm", "--cap-drop=all", "--runtime=crun", "--log-driver=none",
-                    "--pull=never", "--read-only", "--ulimit=nofile=1024:1024", "--ulimit=locks=1024:1024",
-                    "--ulimit=sigpending=1024:1024", "--ulimit=core=0:0", "--ulimit=memlock=0:0",
+                    "--pull=never", "--read-only", "--ulimit=core=0:0", "--ulimit=memlock=0:0",
                     "--ulimit=msgqueue=0:0", "--cgroupns=private", "--ipc=private", "--pid=private",
                     "--uts=private", "--security-opt=no-new-privileges", "--pids-limit=256"]
 
   run_args.append(f"--name={container_id}")
 
-  (user_settings, settings, context_path) = utils.load_settings(container_name)
+  settings = utils.load_settings(container_name, {"network", "uid", "cpu-period", "cpu-quota", "memory",
+                                                  "disk-bps", "disk-iops", "nofile", "locks", "sigpending",
+                                                  "sandbox-path", "disk-name", "mount-parent",
+                                                  "working-dir", "volumes", "env"})
 
   run_args.append(f"--workdir={settings['working-dir']}")
 
@@ -33,24 +35,30 @@ def main():
   else:
     run_args.append("--network=none")
 
-  for (var, val) in settings["env"].items():
-    utils.check_structure(f"settings.env.{var}", val, schema.ENV)
+  for var in settings["env"]:
+    run_args.append(f"--env={var}")
 
-    run_args.append(f"--env={var}={val}")
-
-  device_name = user_settings["disk-name"]
-  uid         = utils.get_value("uid", user_settings, settings)
-  disk_bps    = utils.get_value("disk-bps", user_settings, settings)
-  disk_iops   = utils.get_value("disk-iops", user_settings, settings)
+  device_name = settings["disk-name"]
+  uid         = settings["uid"]
+  disk_bps    = settings["disk-bps"]
+  disk_iops   = settings["disk-iops"]
+  nofile      = settings["nofile"]
+  locks       = settings["locks"]
+  sigpending  = settings["sigpending"]
 
   run_args.extend([f"--userns=keep-id:uid={uid},gid={uid}",
-                   f"--cpu-period={utils.get_value('cpu-period', user_settings, settings)}",
-                   f"--cpu-quota={utils.get_value('cpu-quota', user_settings, settings)}",
-                   f"--memory={utils.get_value('memory', user_settings, settings)}m",
+                   f"--cpu-period={settings['cpu-period']}",
+                   f"--cpu-quota={settings['cpu-quota']}",
+                   f"--memory={settings['memory']}m",
                    f"--device-read-bps={device_name}:{disk_bps}mb",
                    f"--device-write-bps={device_name}:{disk_bps}mb",
                    f"--device-read-iops={device_name}:{disk_iops}",
-                   f"--device-write-iops={device_name}:{disk_iops}"])
+                   f"--device-write-iops={device_name}:{disk_iops}",
+                   f"--ulimit=nofile={nofile}:{nofile}",
+                   f"--ulimit=locks={locks}:{locks}",
+                   f"--ulimit=sigpending={sigpending}:{sigpending}"])
+
+  context_path = settings["context-path"]
 
   reference = utils.load_json("reference", context_path / "reference.json", schema.REFERENCE)
 
@@ -82,13 +90,12 @@ def main():
 
   volumes.sort()
 
-  temp_path    = Path(user_settings["tmpfs-path"], container_id)
-  sandbox_path = Path(user_settings["sandbox-path"], container_name)
+  sandbox_path = Path(settings["sandbox-path"], container_name)
   mount_parent = Path(settings["mount-parent"])
 
   for volume in volumes:
     if (volume_writable[volume]):
-      run_args.append(f"--volume={temp_path / volume}:{mount_parent / volume}:Z,rw,nosuid,nodev")
+      run_args.append(f"--volume={sandbox_path / volume}:{mount_parent / volume}:Z,rw,nosuid,nodev")
     else:
       run_args.append(f"--volume={sandbox_path / volume}:{mount_parent / volume}:Z,ro,nosuid,nodev")
 
@@ -96,37 +103,12 @@ def main():
   run_args.extend(sys.argv[2:])
 
   try:
-    os.mkdir(temp_path, 0o700)
-
-    subprocess.run(["rsync", "-Hrlpt", f"{sandbox_path}/", temp_path], stdout=subprocess.DEVNULL,
-                   check=True)
-
     subprocess.run(run_args, check=True)
 
     subprocess.run(["podman", "start", "-a", container_id])
-
-    hardlinks_max = utils.get_value("hardlinks-max", user_settings, settings)
-
-    result = subprocess.run(["find", temp_path, "-mindepth", "1", "!", "-type", "d", "-links",
-                             f"+{hardlinks_max}", "-printf", ".", "-quit"], check=True, capture_output=True)
-
-    if len(result.stdout) > 0:
-      raise AppError(f"{container_name} returned a file with too many hard links")
-
-    result = subprocess.run(["find", temp_path, "-mindepth", "1", "!", "-type", "f",
-                             "!", "-type", "d", "!", "-type", "l", "-printf", ".", "-quit"], check=True,
-                            capture_output=True)
-
-    if len(result.stdout) > 0:
-      raise AppError(f"{container_name} returned weird files")
-
-    subprocess.run(["rsync", "-Hrlpt", "--delete", f"{temp_path}/", sandbox_path],
-                   stdout=subprocess.DEVNULL, check=True)
   finally:
     subprocess.run(["podman", "stop", "--time=3", container_id], stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL)
-
-    subprocess.run(["find", temp_path, "-delete"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     subprocess.run(["restorecon", "-RF", sandbox_path], stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL)

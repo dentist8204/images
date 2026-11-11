@@ -10,19 +10,19 @@ import schema
 
 defaults = {
   "uid": 1007,
-  "cpu-period": 100000,
-  "cpu-quota": 400000,
-  "memory": 4096,       # mebibytes
-  "disk-bps": 256,      # mebibytes
-  "disk-iops": 50000,
-  "hardlinks-max": 20,  # prevent hardlink bombs
+  "cpu-period": 100000, # micro-seconds
+  "cpu-quota": 400000,  # micro-seconds
+  "memory": 4096,       # mebi-bytes
+  "disk-bps": 256,      # mebi-bytes
+  "disk-iops": 50000,   # read or write operations
+  "nofile": 1024,       # ulimit
+  "locks": 1024,        # ulimit
+  "sigpending": 1024,   # ulimit
 
-  "registry": "ghcr.io/dentist8204/images",
-  "certificate-identity": "https://github.com/dentist8204/images/.github/workflows/build-one.yml@refs/heads/main",
-  "certificate-oidc-issuer": "https://token.actions.githubusercontent.com"
+  "env": []
 }
 
-def load_settings(container_name):
+def load_settings(container_name, required_settings):
   if len(container_name) > 100:
     raise AppError("container name is too long")
   elif len(container_name) < 1:
@@ -34,11 +34,20 @@ def load_settings(container_name):
   home_path = Path.home()
 
   user_settings = load_json("user_settings", home_path / ".config" / "prun" / "settings.json",
-                            schema.USER_SETTINGS)
+                            schema.SETTINGS)
   context_path  = home_path / ".local" / "share" / "prun" / container_name
-  settings      = load_json("settings", context_path / "settings.json", schema.SETTINGS)
 
-  return (user_settings, settings, context_path)
+  container_settings = load_json("container_settings", context_path / "settings.json", schema.SETTINGS)
+
+  settings = { "context-path": context_path }
+
+  for setting in required_settings:
+    try:
+      settings[setting] = get_value(setting, user_settings, container_settings)
+    except KeyError:
+      raise AppError(f"{setting} is not defined any accepted config file")
+
+  return settings
 
 def load_json(name, file_path, schema_):
   with open(file_path, "r", encoding="utf-8") as file_:
@@ -47,23 +56,45 @@ def load_json(name, file_path, schema_):
     except (json.JSONDecodeError, UnicodeDecodeError) as e:
       raise AppError(f"{file_path}: {e}")
 
-    check_structure(name, json_data, schema_)
+    validate_data(name, json_data, schema_)
 
     return json_data
 
-def check_structure(name, data, schema_):
-  if type(data) is not type(schema_):
-    raise AppError(f"{name} is not a {type(schema_).__name__}")
+def validate_data(name, data, schema_):
+  if isinstance(data, str):
+    data = data.encode("utf-8")
 
-  if isinstance(schema_, dict):
-    for (key, expected_type) in schema_.items():
-      if key not in data:
-        raise AppError(f"{name}.{key} is missing")
+  required_type = schema_["type"]
 
-      check_structure(f"{name}.{key}", data[key], expected_type)
-  elif isinstance(schema_, list):
-    for i in range(0, len(data)):
-      check_structure(f"{name}[{i}]", data[i], schema_[0])
+  if not isinstance(data, required_type):
+    raise AppError(f"{name} is not type {required_type.__name__}")
+
+  match data:
+    case dict():
+      if "items" in schema_:
+        items_schema = schema_["items"]
+
+        for (key, value) in items_schema.items():
+          if value["strict"] and key not in data:
+            raise AppError(f"{name}.{key} is missing")
+
+        for (key, value) in data.items():
+          if key not in items_schema:
+            raise AppError(f"{name}.{key} is an unknown key")
+
+          validate_data(f"{name}.{key}", value, items_schema[key])
+    case list():
+      if "entry" in schema_:
+        entry_schema = schema_["entry"]
+
+        for (i, entry) in enumerate(data):
+          validate_data(f"{name}[{i}]", entry, entry_schema)
+    case int():
+      if "min" in schema_ and data < schema_["min"]:
+        raise AppError(f"{name} < {schema_['min']}")
+    case bytes():
+      if "pattern" in schema_ and not re.fullmatch(schema_["pattern"], data):
+        raise AppError(f"{name} does not match regex")
 
 def run_main(main, tool_name):
   try:
@@ -71,18 +102,16 @@ def run_main(main, tool_name):
       main()
     except KeyboardInterrupt:
       raise AppError("interrupted")
-    except (OSError, subprocess.CalledProcessError) as e:
-      raise AppError(e)
-  except AppError as e:
+  except (AppError, OSError, subprocess.CalledProcessError) as e:
     print(f"{tool_name}:", e, file=sys.stderr)
     sys.exit(1)
   except UsageError as e:
     print(f"usage: {tool_name}", e, file=sys.stderr)
     sys.exit(2)
 
-def get_value(key, user_settings, settings=None):
-  if settings is not None and key in settings:
-    return settings[key]
+def get_value(key, user_settings, container_settings):
+  if key in container_settings:
+    return container_settings[key]
 
   if key in user_settings:
     return user_settings[key]

@@ -17,12 +17,13 @@ def main():
   if len(sys.argv) != 2:
     raise UsageError("<container>")
 
-  container_name                          = sys.argv[1]
-  (user_settings, settings, context_path) = utils.load_settings(container_name)
+  container_name = sys.argv[1]
+  settings       = utils.load_settings(container_name, {"certificate-identity", "certificate-oidc-issuer",
+                                                        "registry"})
 
-  registry                = utils.get_value("registry", user_settings)
-  certificate_identity    = utils.get_value("certificate-identity", user_settings)
-  certificate_oidc_issuer = utils.get_value("certificate-oidc-issuer", user_settings)
+  registry                = settings["registry"]
+  certificate_identity    = settings["certificate-identity"]
+  certificate_oidc_issuer = settings["certificate-oidc-issuer"]
 
   container_source = f"{registry}/{container_name}"
 
@@ -44,6 +45,8 @@ def main():
     new_digest_value = new_digest.split(":")[1]
   except IndexError:
     raise AppError(f"New digest has an unexpected format: {new_digest}")
+
+  context_path = settings["context-path"]
 
   try:
     current_digest = utils.load_json("reference", context_path / "reference.json",
@@ -75,15 +78,11 @@ def main():
 
   seccomp_profile = output["predicate"]
 
-  if seccomp_profile["defaultAction"] != "SCMP_ACT_ERRNO":
-    raise AppError("pulled seccomp profile is not an allow list")
-
   config_path = Path.home() / ".config" / "prun"
 
-  replacements = utils.load_json("replacements", config_path / "replacements.json",
-                                 schema.A_DICT)
+  replacements = utils.load_json("replacements", config_path / "replacements.json", schema.DICT)
 
-  allowance  = set(utils.load_json("allowance", config_path / "allowance.json", schema.A_DICT))
+  allowance  = set(utils.load_json("allowance", config_path / "allowance.json", schema.DICT))
   allowance -= set(replacements)
 
   for name in seccomp_profile["syscalls"][0]["names"]:
@@ -95,9 +94,6 @@ def main():
 
     if action == "SCMP_ACT_ERRNO":
       continue
-
-    if action != "SCMP_ACT_ALLOW":
-      raise AppError(f"seccomp_profile.syscalls[{i}].action = {action} is disallowed")
 
     if len(entry["names"]) != 1:
       raise AppError(f"seccomp_profile.syscalls[{i}].names is not length 1")
@@ -141,8 +137,8 @@ def main():
                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 def load_jsons(name, raw_data, schema_):
-  # 50 KiB
-  if len(raw_data) > 51200:
+  # 500 KiB
+  if len(raw_data) > 512000:
     raise AppError(f"{name} is too large to be decoded safely")
 
   try:
@@ -150,7 +146,7 @@ def load_jsons(name, raw_data, schema_):
   except json.JSONDecodeError as e:
     raise AppError(f"{name}: {e}")
 
-  utils.check_structure(name, json_data, schema_)
+  utils.validate_data(name, json_data, schema_)
 
   return json_data
 
