@@ -10,11 +10,11 @@ import schema
 
 defaults = {
   "uid": 1007,
-  "cpu-period": 100000,
-  "cpu-quota": 400000,
-  "memory": 4096,       # mebibytes
-  "disk-bps": 256,      # mebibytes
-  "disk-iops": 50000,
+  "cpu-period": 100000, # micro-seconds
+  "cpu-quota": 400000,  # micro-seconds
+  "memory": 4096,       # mebi-bytes
+  "disk-bps": 256,      # mebi-bytes
+  "disk-iops": 50000,   # read or write operations
 
   "registry": "ghcr.io/dentist8204/images",
   "certificate-identity": "https://github.com/dentist8204/images/.github/workflows/build-one.yml@refs/heads/main",
