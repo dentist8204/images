@@ -70,9 +70,7 @@ def run_main(main, tool_name):
       main()
     except KeyboardInterrupt:
       raise AppError("interrupted")
-    except (OSError, subprocess.CalledProcessError) as e:
-      raise AppError(e)
-  except AppError as e:
+  except (AppError, OSError, subprocess.CalledProcessError) as e:
     print(f"{tool_name}:", e, file=sys.stderr)
     sys.exit(1)
   except UsageError as e:
