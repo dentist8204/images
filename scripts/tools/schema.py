@@ -11,6 +11,10 @@ SETTINGS = { "type": dict, "items": {
   "locks": { "type": int, "strict": False, "min": 0 },
   "sigpending": { "type": int, "strict": False, "min": 0 },
 
+  # https://www.rfc-editor.org/info/rfc3986/
+  "certificate-identity": { "type": bytes, "strict": False, "pattern": rb"[a-zA-Z][a-zA-Z0-9+.-]*://[^\x00\s]+"},
+  "certificate-oidc-issuer": { "type": bytes, "strict": False, "pattern": rb"[a-zA-Z][a-zA-Z0-9+.-]*://[^\x00\s]+"},
+  "registry": { "type": bytes, "strict": False, "pattern": rb"[^\x00\s]+" },
   "sandbox-path": { "type": bytes, "strict": False, "pattern": rb"/[^\x00]*" },
   "disk-name": { "type": bytes, "strict": False, "pattern": rb"/dev/[^\x00]*" },
   "mount-parent": { "type": bytes, "strict": False, "pattern": rb"/[^\x00]*" },
@@ -57,14 +61,14 @@ ATTEST_PAYLOAD = { "type": dict, "items": {
     "defaultErrno": { "type": bytes, "strict": True },
 
     "architectures": { "type": list, "strict": True },
-    "syscalls": { "type": list, "strict": True, "entry": {
+    "syscalls": { "type": list, "strict": True, "entry": { "type": dict, "items": {
       "errnoRet": { "type": int, "strict": False, "min": 0 },
 
       "action": { "type": bytes, "strict": True, "pattern": rb"(SCMP_ACT_ERRNO|SCMP_ACT_ALLOW)" },
 
       "names": { "type": list, "strict": True },
       "args": { "type": list, "strict": False }
-    }}
+    }}}
   }},
 
   "subject": { "type": list, "strict": False }
@@ -75,3 +79,5 @@ REFERENCE = { "type": dict, "items": {
   # https://github.com/opencontainers/image-spec/blob/13cff54902ec9ad6320cbc487a685b66fcd67171/descriptor.md#digests
   "digest": { "type": bytes, "strict": True, "pattern": rb"[a-z0-9]+([+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+"}
 }}
+
+DICT = { "type": dict }
