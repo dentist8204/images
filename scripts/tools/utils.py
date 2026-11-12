@@ -75,7 +75,7 @@ def validate_data(name, data, schema_):
         items_schema = schema_["items"]
 
         for (key, value) in items_schema.items():
-          if value["strict"] and key not in data:
+          if value.get("strict", False) and key not in data:
             raise AppError(f"{name}.{key} is missing")
 
         for (key, value) in data.items():
