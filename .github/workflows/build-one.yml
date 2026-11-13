@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  REGISTRY: ghcr.io
+  IMAGE_URL: ${{ vars.REGISTRY }}/${{ github.repository_owner }}/${{ inputs.image_name }}
   USERNAME: temp-user
   UID: 1008
 
@@ -51,7 +51,7 @@ jobs:
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         if: ${{ inputs.push }}
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ vars.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
@@ -61,7 +61,7 @@ jobs:
         id: build-push
         with:
           context: contexts/${{ inputs.image_name }}
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}:staged
+          tags: ${{ env.IMAGE_URL }}:staged
           push: ${{ inputs.push }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -74,7 +74,7 @@ jobs:
           cosign-release: 'v3.0.6'
       - name: Sign the Image
         if: ${{ inputs.push }}
-        run: cosign sign --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}
+        run: cosign sign --yes ${{ env.IMAGE_URL }}@${{ steps.build-push.outputs.digest }}
       - name: Install Packages
         run: |
           set -euo pipefail
@@ -95,14 +95,14 @@ jobs:
       - name: Run Scripts
         run: |
           set -euo pipefail
-          python3 scripts/seccomp/run-tests.py ${{ inputs.image_name }} ${{ env.REGISTRY }}/${{ github.repository }} ${{ env.USERNAME }} /run/user/${{ env.UID }} ${{ steps.build-push.outputs.digest }}
+          python3 scripts/seccomp/run-tests.py ${{ inputs.image_name }} ${{ vars.REGISTRY }}/${{ github.repository_owner }} ${{ env.USERNAME }} /run/user/${{ env.UID }} ${{ steps.build-push.outputs.digest }}
           python3 scripts/seccomp/format-profile.py
       - name: Upload and Sign the Seccomp Profile
         if: ${{ inputs.push }}
-        run: cosign attest --predicate seccomp-profile.json --type https://seccomp-profile.local --yes ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }}
+        run: cosign attest --predicate seccomp-profile.json --type https://seccomp-profile.local --yes ${{ env.IMAGE_URL }}@${{ steps.build-push.outputs.digest }}
       - name: Install crane
         if: ${{ inputs.push }}
         run: go install github.com/google/go-containerregistry/cmd/crane@8a72a424fdecb4caa14f2d525e5d2503331442b5 # v0.22.1
       - name: Add latest Tag
         if: ${{ inputs.push }}
-        run: $(go env GOPATH)/bin/crane tag ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.image_name }}@${{ steps.build-push.outputs.digest }} latest
+        run: $(go env GOPATH)/bin/crane tag ${{ env.IMAGE_URL }}@${{ steps.build-push.outputs.digest }} latest
