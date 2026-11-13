@@ -23,16 +23,13 @@ class IntSchema(Schema):
     if self.min_ is not None and data < self.min_:
       raise AppError(f"{name} < {self.min_}")
 
-class BytesSchema(Schema):
+class StringSchema(Schema):
   def __init__(self, pattern=None, **kwargs):
-    super().__init__(type_=bytes, **kwargs)
+    super().__init__(type_=str, **kwargs)
 
     self.pattern = pattern
 
   def validate(self, name, data):
-    if isinstance(data, str):
-      data = data.encode("utf-8")
-
     super().validate(name, data)
 
     if self.pattern and not re.fullmatch(self.pattern, data):
@@ -71,25 +68,24 @@ class ListSchema(Schema):
       for (i, entry) in enumerate(data):
         self.entry_schema.validate(f"{name}[{i}]", entry)
 
-__ONE_OR_MORE_VISIBLE = rb"[\x21-\x7e]+"
-__ABSOLUTE_PATH       = rb"/[^\x00]*"
-__RELATIVE_PATH       = rb"[^/][^\x00]*"
-__ERRNO               = rb"SCMP_ACT_ERRNO"
+__ONE_OR_MORE_VISIBLE = r"[!-~]+"
+__ABSOLUTE_PATH       = r"/[^\u0000]*"
+__RELATIVE_PATH       = r"[^/][^\u0000]*"
+__ENV                 = r"[^\u0000=]+=[^\u0000]*"
+__ERRNO               = r"SCMP_ACT_ERRNO"
 # from https://github.com/opencontainers/image-spec/blob/13cff54902ec9ad6320cbc487a685b66fcd67171/descriptor.md#digests
-__MANIFEST_DIGEST     = rb"[a-z0-9]+([+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+"
-# from https://pubs.opengroup.org/onlinepubs/9799919799
-__ENV                 = rb"[^\x00=]+=[^\x00]*"
+__MANIFEST_DIGEST     = r"[a-z0-9]+([+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+"
 
-__DEVICE_PATH    = rb"/dev" + __ABSOLUTE_PATH
-__ERRNO_OR_ALLOW = rb"(" + __ERRNO + rb"|SCMP_ACT_ALLOW)"
+__DEVICE_PATH    = rf"/dev{__ABSOLUTE_PATH}"
+__ERRNO_OR_ALLOW = rf"({__ERRNO}|SCMP_ACT_ALLOW)"
 
 _NON_NEGATIVE_INT = IntSchema(min_=0)
 
-_ABSOLUTE_PATH   = BytesSchema(pattern=__ABSOLUTE_PATH)
-_VISIBLE         = BytesSchema(pattern=__ONE_OR_MORE_VISIBLE)
-_VISIBLE_STRICT  = BytesSchema(pattern=__ONE_OR_MORE_VISIBLE, strict=True)
+_ABSOLUTE_PATH   = StringSchema(pattern=__ABSOLUTE_PATH)
+_VISIBLE         = StringSchema(pattern=__ONE_OR_MORE_VISIBLE)
+_VISIBLE_STRICT  = StringSchema(pattern=__ONE_OR_MORE_VISIBLE, strict=True)
 
-_RELATIVE_PATH_LIST = ListSchema(entry_schema=BytesSchema(pattern=__RELATIVE_PATH))
+_RELATIVE_PATH_LIST = ListSchema(entry_schema=StringSchema(pattern=__RELATIVE_PATH))
 
 SETTINGS = DictSchema(items={
   "network": Schema(type_=bool),
@@ -108,7 +104,7 @@ SETTINGS = DictSchema(items={
   "certificate-oidc-issuer": _VISIBLE,
   "registry": _VISIBLE,
   "sandbox-path": _ABSOLUTE_PATH,
-  "disk-name": BytesSchema(pattern=__DEVICE_PATH),
+  "disk-name": StringSchema(pattern=__DEVICE_PATH),
   "mount-parent": _ABSOLUTE_PATH,
   "working-dir": _ABSOLUTE_PATH,
 
@@ -118,7 +114,7 @@ SETTINGS = DictSchema(items={
     "tmpfs": _RELATIVE_PATH_LIST
   }),
 
-  "env": ListSchema(entry_schema=BytesSchema(pattern=__ENV))
+  "env": ListSchema(entry_schema=StringSchema(pattern=__ENV))
 })
 
 VERIFY_OUTPUT = ListSchema(entry_schema=DictSchema(items={
@@ -127,7 +123,7 @@ VERIFY_OUTPUT = ListSchema(entry_schema=DictSchema(items={
 
     "identity": DictSchema(),
     "image": DictSchema(strict=True, items={
-      "docker-manifest-digest": BytesSchema(pattern=__MANIFEST_DIGEST, strict=True)
+      "docker-manifest-digest": StringSchema(pattern=__MANIFEST_DIGEST, strict=True)
     })
   }),
   "optional": DictSchema()
@@ -145,14 +141,14 @@ ATTEST_PAYLOAD = DictSchema(items={
   "predicateType": _VISIBLE,
 
   "predicate": DictSchema(strict=True, items={
-    "defaultAction": BytesSchema(pattern=__ERRNO, strict=True),
+    "defaultAction": StringSchema(pattern=__ERRNO, strict=True),
     "defaultErrno": _VISIBLE_STRICT,
 
     "architectures": ListSchema(strict=True),
     "syscalls": ListSchema(strict=True, entry_schema=DictSchema(items={
       "errnoRet": _NON_NEGATIVE_INT,
 
-      "action": BytesSchema(pattern=__ERRNO_OR_ALLOW, strict=True),
+      "action": StringSchema(pattern=__ERRNO_OR_ALLOW, strict=True),
 
       "names": ListSchema(strict=True, entry_schema=_VISIBLE),
       "args": ListSchema()
@@ -164,7 +160,7 @@ ATTEST_PAYLOAD = DictSchema(items={
 
 REFERENCE = DictSchema(items={
   "registry": _VISIBLE_STRICT,
-  "digest": BytesSchema(pattern=__MANIFEST_DIGEST, strict=True)
+  "digest": StringSchema(pattern=__MANIFEST_DIGEST, strict=True)
 })
 
 DICT = DictSchema()
