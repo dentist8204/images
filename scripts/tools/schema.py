@@ -1,18 +1,98 @@
-__PRINTABLE     = rb"[\x21-\x7e]+"
+import re
 
-_ABSOLUTE_PATH    = { "type": bytes, "pattern": rb"/[^\x00]*" }
-_PRINTABLE        = { "type": bytes, "pattern": __PRINTABLE }
-_PRINTABLE_STRICT = { "type": bytes, "strict": True, "pattern": __PRINTABLE }
+from errors import AppError
 
+class Schema:
+  def __init__(self, type_=object, strict=False):
+    self.type_ = type_
+    self.strict = strict
+
+  def validate(self, name, data):
+    if not isinstance(data, self.type_):
+      raise AppError(f"{name} is not type {self.type_.__name__}")
+
+class IntSchema(Schema):
+  def __init__(self, min_=None, **kwargs):
+    super().__init__(type_=int, **kwargs)
+
+    self.min_ = min_
+
+  def validate(self, name, data):
+    super().validate(name, data)
+
+    if self.min_ is not None and data < self.min_:
+      raise AppError(f"{name} < {self.min_}")
+
+class BytesSchema(Schema):
+  def __init__(self, pattern=None, **kwargs):
+    super().__init__(type_=bytes, **kwargs)
+
+    self.pattern = pattern
+
+  def validate(self, name, data):
+    if isinstance(data, str):
+      data = data.encode("utf-8")
+
+    super().validate(name, data)
+
+    if self.pattern and not re.fullmatch(self.pattern, data):
+      raise AppError(f"{name} does not match {self.pattern}")
+
+class DictSchema(Schema):
+  def __init__(self, items=None, **kwargs):
+    super().__init__(type_=dict, **kwargs)
+
+    self.items = items
+
+  def validate(self, name, data):
+    super().validate(name, data)
+
+    if self.items:
+      for (key, schema_) in self.items.items():
+        if schema_.strict and key not in data:
+          raise AppError(f"{name}.{key} is missing")
+
+      for (key, value) in data.items():
+        if key not in self.items:
+          raise AppError(f"{name}.{key} is an unknown key")
+
+        self.items[key].validate(f"{name}.{key}", value)
+
+class ListSchema(Schema):
+  def __init__(self, entry_schema=None, **kwargs):
+    super().__init__(type_=list, **kwargs)
+
+    self.entry_schema = entry_schema
+
+  def validate(self, name, data):
+    super().validate(name, data)
+
+    if self.entry_schema:
+      for (i, entry) in enumerate(data):
+        self.entry_schema.validate(f"{name}[{i}]", entry)
+
+__ONE_OR_MORE_VISIBLE = rb"[\x21-\x7e]+"
+__ABSOLUTE_PATH       = rb"/[^\x00]*"
+__RELATIVE_PATH       = rb"[^/][^\x00]*"
+__ERRNO               = rb"SCMP_ACT_ERRNO"
 # from https://github.com/opencontainers/image-spec/blob/13cff54902ec9ad6320cbc487a685b66fcd67171/descriptor.md#digests
-_MANIFEST_DIGEST = { "type": bytes, "strict": True, "pattern": rb"[a-z0-9]+([+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+" }
+__MANIFEST_DIGEST     = rb"[a-z0-9]+([+._-][a-z0-9]+)*:[a-zA-Z0-9=_-]+"
+# from https://pubs.opengroup.org/onlinepubs/9799919799
+__ENV                 = rb"[^\x00=]+=[^\x00]*"
 
-_NON_NEGATIVE_INT = { "type": int, "min": 0 }
+__DEVICE_PATH    = rb"/dev" + __ABSOLUTE_PATH
+__ERRNO_OR_ALLOW = rb"(" + __ERRNO + rb"|SCMP_ACT_ALLOW)"
 
-_RELATIVE_PATH_LIST = { "type": list, "entry": { "type": bytes, "pattern": rb"[^/][^\x00]*" } }
+_NON_NEGATIVE_INT = IntSchema(min_=0)
 
-SETTINGS = { "type": dict, "items": {
-  "network": { "type": bool },
+_ABSOLUTE_PATH   = BytesSchema(pattern=__ABSOLUTE_PATH)
+_VISIBLE         = BytesSchema(pattern=__ONE_OR_MORE_VISIBLE)
+_VISIBLE_STRICT  = BytesSchema(pattern=__ONE_OR_MORE_VISIBLE, strict=True)
+
+_RELATIVE_PATH_LIST = ListSchema(entry_schema=BytesSchema(pattern=__RELATIVE_PATH))
+
+SETTINGS = DictSchema(items={
+  "network": Schema(type_=bool),
 
   "uid": _NON_NEGATIVE_INT,
   "cpu-period": _NON_NEGATIVE_INT,
@@ -24,68 +104,67 @@ SETTINGS = { "type": dict, "items": {
   "locks": _NON_NEGATIVE_INT,
   "sigpending": _NON_NEGATIVE_INT,
 
-  "certificate-identity": _PRINTABLE,
-  "certificate-oidc-issuer": _PRINTABLE,
-  "registry": _PRINTABLE,
+  "certificate-identity": _VISIBLE,
+  "certificate-oidc-issuer": _VISIBLE,
+  "registry": _VISIBLE,
   "sandbox-path": _ABSOLUTE_PATH,
-  "disk-name": { "type": bytes, "pattern": rb"/dev/[^\x00]*" },
+  "disk-name": BytesSchema(pattern=__DEVICE_PATH),
   "mount-parent": _ABSOLUTE_PATH,
   "working-dir": _ABSOLUTE_PATH,
 
-  "volumes": { "type": dict, "items": {
-    "read_write": _RELATIVE_PATH_LIST,
-    "read_only": _RELATIVE_PATH_LIST,
+  "volumes": DictSchema(items={
+    "read-write": _RELATIVE_PATH_LIST,
+    "read-only": _RELATIVE_PATH_LIST,
     "tmpfs": _RELATIVE_PATH_LIST
-  }},
+  }),
 
-  # from https://pubs.opengroup.org/onlinepubs/9799919799/
-  "env": { "type": list, "entry": { "type": bytes, "pattern": rb"[^\x00=]+=[^\x00]*" } }
-}}
+  "env": ListSchema(entry_schema=BytesSchema(pattern=__ENV))
+})
 
-VERIFY_OUTPUT = { "type": list, "entry": { "type": dict, "items": {
-  "critical": { "type": dict, "strict": True, "items": {
-    "type": _PRINTABLE_STRICT,
+VERIFY_OUTPUT = ListSchema(entry_schema=DictSchema(items={
+  "critical": DictSchema(strict=True, items={
+    "type": _VISIBLE_STRICT,
 
-    "identity": { "type": dict },
-    "image": { "type": dict, "strict": True, "items": {
-      "docker-manifest-digest": _MANIFEST_DIGEST
-    }}
-  }},
-  "optional": { "type": dict }
-}}}
+    "identity": DictSchema(),
+    "image": DictSchema(strict=True, items={
+      "docker-manifest-digest": BytesSchema(pattern=__MANIFEST_DIGEST, strict=True)
+    })
+  }),
+  "optional": DictSchema()
+}))
 
-ATTEST_OUTPUT = { "type": dict, "items": {
-  "payload": _PRINTABLE_STRICT,
-  "payloadType": _PRINTABLE,
+ATTEST_OUTPUT = DictSchema(items={
+  "payload": _VISIBLE_STRICT,
+  "payloadType": _VISIBLE,
 
-  "signatures": { "type": list }
-}}
+  "signatures": ListSchema()
+})
 
-ATTEST_PAYLOAD = { "type": dict, "items": {
-  "_type": _PRINTABLE,
-  "predicateType": _PRINTABLE,
+ATTEST_PAYLOAD = DictSchema(items={
+  "_type": _VISIBLE,
+  "predicateType": _VISIBLE,
 
-  "predicate": { "type": dict, "strict": True, "items": {
-    "defaultAction": { "type": bytes, "strict": True, "pattern": rb"SCMP_ACT_ERRNO" },
-    "defaultErrno": _PRINTABLE_STRICT,
+  "predicate": DictSchema(strict=True, items={
+    "defaultAction": BytesSchema(pattern=__ERRNO, strict=True),
+    "defaultErrno": _VISIBLE_STRICT,
 
-    "architectures": { "type": list, "strict": True },
-    "syscalls": { "type": list, "strict": True, "entry": { "type": dict, "items": {
+    "architectures": ListSchema(strict=True),
+    "syscalls": ListSchema(strict=True, entry_schema=DictSchema(items={
       "errnoRet": _NON_NEGATIVE_INT,
 
-      "action": { "type": bytes, "strict": True, "pattern": rb"(SCMP_ACT_ERRNO|SCMP_ACT_ALLOW)" },
+      "action": BytesSchema(pattern=__ERRNO_OR_ALLOW, strict=True),
 
-      "names": { "type": list, "strict": True, "entry": _PRINTABLE },
-      "args": { "type": list }
-    }}}
-  }},
+      "names": ListSchema(strict=True, entry_schema=_VISIBLE),
+      "args": ListSchema()
+    }))
+  }),
 
-  "subject": { "type": list }
-}}
+  "subject": ListSchema()
+})
 
-REFERENCE = { "type": dict, "items": {
-  "registry": _PRINTABLE_STRICT,
-  "digest": _MANIFEST_DIGEST
-}}
+REFERENCE = DictSchema(items={
+  "registry": _VISIBLE_STRICT,
+  "digest": BytesSchema(pattern=__MANIFEST_DIGEST, strict=True)
+})
 
-DICT = { "type": dict }
+DICT = DictSchema()

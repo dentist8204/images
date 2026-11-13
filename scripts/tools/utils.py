@@ -61,40 +61,7 @@ def load_json(name, file_path, schema_):
     return json_data
 
 def validate_data(name, data, schema_):
-  if isinstance(data, str):
-    data = data.encode("utf-8")
-
-  required_type = schema_["type"]
-
-  if not isinstance(data, required_type):
-    raise AppError(f"{name} is not type {required_type.__name__}")
-
-  match data:
-    case dict():
-      if "items" in schema_:
-        items_schema = schema_["items"]
-
-        for (key, value) in items_schema.items():
-          if value.get("strict", False) and key not in data:
-            raise AppError(f"{name}.{key} is missing")
-
-        for (key, value) in data.items():
-          if key not in items_schema:
-            raise AppError(f"{name}.{key} is an unknown key")
-
-          validate_data(f"{name}.{key}", value, items_schema[key])
-    case list():
-      if "entry" in schema_:
-        entry_schema = schema_["entry"]
-
-        for (i, entry) in enumerate(data):
-          validate_data(f"{name}[{i}]", entry, entry_schema)
-    case int():
-      if "min" in schema_ and data < schema_["min"]:
-        raise AppError(f"{name} < {schema_['min']}")
-    case bytes():
-      if "pattern" in schema_ and not re.fullmatch(schema_["pattern"], data):
-        raise AppError(f"{name} does not match regex")
+  schema_.validate(name, data)
 
 def run_main(main, tool_name):
   try:
