@@ -38,25 +38,17 @@ def main():
   for var in settings["env"]:
     run_args.append(f"--env={var}")
 
-  device_name = settings["disk-name"]
-  uid         = settings["uid"]
-  disk_bps    = settings["disk-bps"]
-  disk_iops   = settings["disk-iops"]
-  nofile      = settings["nofile"]
-  locks       = settings["locks"]
-  sigpending  = settings["sigpending"]
-
-  run_args.extend([f"--userns=keep-id:uid={uid},gid={uid}",
+  run_args.extend([f"--userns=keep-id:uid={settings["uid"]},gid={settings["uid"]}",
                    f"--cpu-period={settings['cpu-period']}",
                    f"--cpu-quota={settings['cpu-quota']}",
                    f"--memory={settings['memory']}m",
-                   f"--device-read-bps={device_name}:{disk_bps}mb",
-                   f"--device-write-bps={device_name}:{disk_bps}mb",
-                   f"--device-read-iops={device_name}:{disk_iops}",
-                   f"--device-write-iops={device_name}:{disk_iops}",
-                   f"--ulimit=nofile={nofile}:{nofile}",
-                   f"--ulimit=locks={locks}:{locks}",
-                   f"--ulimit=sigpending={sigpending}:{sigpending}"])
+                   f"--device-read-bps={settings["disk-name"]}:{settings["disk-bps"]}mb",
+                   f"--device-write-bps={settings["disk-name"]}:{settings["disk-bps"]}mb",
+                   f"--device-read-iops={settings["disk-name"]}:{settings["disk-iops"]}",
+                   f"--device-write-iops={settings["disk-name"]}:{settings["disk-iops"]}",
+                   f"--ulimit=nofile={settings["nofile"]}:{settings["nofile"]}",
+                   f"--ulimit=locks={settings["locks"]}:{settings["locks"]}",
+                   f"--ulimit=sigpending={settings["sigpending"]}:{settings["sigpending"]}"])
 
   context_path = settings["context-path"]
 
@@ -64,10 +56,7 @@ def main():
 
   digest = reference["digest"]
 
-  try:
-    run_args.append(f"--security-opt=seccomp={context_path / digest.split(':')[1] / 'seccomp.json'}")
-  except IndexError:
-    raise AppError(f"reference.digest has an unexpected format: {digest}")
+  run_args.append(f"--security-opt=seccomp={context_path / digest.split(':')[1] / 'seccomp.json'}")
 
   volume_writable = {}
   volumes         = []
