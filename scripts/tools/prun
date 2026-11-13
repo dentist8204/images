@@ -16,7 +16,7 @@ def main():
 
   container_name = sys.argv[1]
   container_id   = "prun.id." + secrets.token_urlsafe(16)
-  run_args       = ["podman", "create", "--rm", "--cap-drop=all", "--runtime=crun", "--log-driver=none",
+  run_args       = ["podman", "run", "--rm", "--cap-drop=all", "--runtime=crun", "--log-driver=none",
                     "--pull=never", "--read-only", "--ulimit=core=0:0", "--ulimit=memlock=0:0",
                     "--ulimit=msgqueue=0:0", "--cgroupns=private", "--ipc=private", "--pid=private",
                     "--uts=private", "--security-opt=no-new-privileges", "--pids-limit=256"]
@@ -72,7 +72,7 @@ def main():
   volume_writable = {}
   volumes         = []
 
-  for volume in settings["volumes"]["read_write"]:
+  for volume in settings["volumes"]["read-write"]:
     if volume in volume_writable:
       raise AppError(f"duplicate volume: {volume}")
 
@@ -80,7 +80,7 @@ def main():
 
     volumes.append(volume)
 
-  for volume in settings["volumes"]["read_only"]:
+  for volume in settings["volumes"]["read-only"]:
     if volume in volume_writable:
       raise AppError(f"duplicate volume: {volume}")
 
@@ -94,18 +94,22 @@ def main():
   mount_parent = Path(settings["mount-parent"])
 
   for volume in volumes:
+    volume_flag = f"--volume={sandbox_path / volume}:{mount_parent / volume}:Z,nosuid,nodev"
+
     if (volume_writable[volume]):
-      run_args.append(f"--volume={sandbox_path / volume}:{mount_parent / volume}:Z,rw,nosuid,nodev")
+      volume_flag += ",rw"
     else:
-      run_args.append(f"--volume={sandbox_path / volume}:{mount_parent / volume}:Z,ro,nosuid,nodev")
+      volume_flag += ",ro"
+
+    run_args.append(volume_flag)
 
   run_args.append(f"{reference['registry']}/{container_name}@{digest}")
   run_args.extend(sys.argv[2:])
 
   try:
     subprocess.run(run_args, check=True)
-
-    subprocess.run(["podman", "start", "-a", container_id])
+  except subprocess.CalledProcessError as e:
+    raise AppError(f"podman-run failed with return code {e.returncode}")
   finally:
     subprocess.run(["podman", "stop", "--time=3", container_id], stdout=subprocess.DEVNULL,
                    stderr=subprocess.DEVNULL)
