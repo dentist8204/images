@@ -31,7 +31,7 @@ def main():
 
   run_args.append(f"--workdir={settings['working-dir']}")
 
-  if (settings["network"]):
+  if settings["network"]:
     run_args.append("--network=private")
   else:
     run_args.append("--network=none")
