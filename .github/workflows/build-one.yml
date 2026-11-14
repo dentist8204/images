@@ -14,11 +14,6 @@ concurrency:
   group: build-one-${{ github.event_name }}-${{ github.ref || github.run_id }}-${{ inputs.image_name }}
   cancel-in-progress: true
 
-env:
-  IMAGE_URL: ${{ vars.REGISTRY }}/${{ github.repository_owner }}/${{ inputs.image_name }}
-  USERNAME: temp-user
-  UID: 1008
-
 jobs:
   check-paths:
     runs-on: ubuntu-26.04
@@ -46,6 +41,10 @@ jobs:
       contents: read
       packages: write
       id-token: write
+    env:
+      IMAGE_URL: ${{ vars.REGISTRY }}/${{ github.repository_owner }}/${{ inputs.image_name }}
+      USERNAME: temp-user
+      UID: 1008
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
@@ -74,35 +73,39 @@ jobs:
           cosign-release: 'v3.0.6'
       - name: Sign the Image
         if: ${{ inputs.push }}
-        run: cosign sign --yes ${{ env.IMAGE_URL }}@${{ steps.build-push.outputs.digest }}
+        run: cosign sign --yes "$IMAGE_URL@${{ steps.build-push.outputs.digest }}"
       - name: Install Packages
         run: |
-          set -euo pipefail
+          set -euxo pipefail
+
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends auditd bpftrace crun linux-headers-$(uname -r) podman python3
       - name: Setup Temporary User
         run: |
-          set -euo pipefail
-          sudo groupadd --gid ${{ env.UID }} ${{ env.USERNAME }}
-          sudo useradd --uid ${{ env.UID }} --gid ${{ env.UID }} --create-home --shell /bin/bash ${{ env.USERNAME }}
-          echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subuid
-          echo "${{ env.USERNAME }}:157257050:65536" | sudo tee /etc/subgid
-          sudo cp -r tests /home/${{ env.USERNAME }}
-          sudo mkdir -p /home/${{ env.USERNAME }}/config
-          sudo cp -r config/seccomp /home/${{ env.USERNAME }}/config
-          sudo chown -R ${{ env.USERNAME }}:${{ env.USERNAME }} /home/${{ env.USERNAME }}
-          sudo loginctl enable-linger ${{ env.USERNAME }}
-      - name: Run Scripts
-        run: |
-          set -euo pipefail
-          python3 scripts/seccomp/run-tests.py ${{ inputs.image_name }} ${{ vars.REGISTRY }}/${{ github.repository_owner }} ${{ env.USERNAME }} /run/user/${{ env.UID }} ${{ steps.build-push.outputs.digest }}
-          python3 scripts/seccomp/format-profile.py
+          set -euxo pipefail
+
+          sudo groupadd --gid "$UID" "$USERNAME"
+          sudo useradd --uid "$UID" --gid "$UID" --create-home --shell /bin/bash "$USERNAME"
+
+          echo "$USERNAME:157257050:65536" | sudo tee /etc/subuid
+          echo "$USERNAME:157257050:65536" | sudo tee /etc/subgid
+
+          sudo cp -r tests "/home/$USERNAME"
+          sudo mkdir -p "/home/$USERNAME/config"
+          sudo cp -r config/seccomp "/home/$USERNAME/config"
+          sudo chown -R "$USERNAME:$USERNAME" "/home/$USERNAME"
+
+          sudo loginctl enable-linger "$USERNAME"
+      - name: Trace Containers
+        run: python3 scripts/seccomp/run-tests.py ${{ inputs.image_name }} ${{ vars.REGISTRY }}/${{ github.repository_owner }} "$USERNAME" "/run/user/$UID" ${{ steps.build-push.outputs.digest }}
+      - name: Create Seccomp Profile
+        run: python3 scripts/seccomp/format-profile.py
       - name: Upload and Sign the Seccomp Profile
         if: ${{ inputs.push }}
-        run: cosign attest --predicate seccomp-profile.json --type https://seccomp-profile.local --yes ${{ env.IMAGE_URL }}@${{ steps.build-push.outputs.digest }}
+        run: cosign attest --predicate seccomp-profile.json --type https://seccomp-profile.local --yes "$IMAGE_URL@${{ steps.build-push.outputs.digest }}"
       - name: Install crane
         if: ${{ inputs.push }}
         run: go install github.com/google/go-containerregistry/cmd/crane@8a72a424fdecb4caa14f2d525e5d2503331442b5 # v0.22.1
       - name: Add latest Tag
         if: ${{ inputs.push }}
-        run: $(go env GOPATH)/bin/crane tag ${{ env.IMAGE_URL }}@${{ steps.build-push.outputs.digest }} latest
+        run: $(go env GOPATH)/bin/crane tag "$IMAGE_URL@${{ steps.build-push.outputs.digest }}" latest
