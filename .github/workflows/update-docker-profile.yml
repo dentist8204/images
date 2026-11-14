@@ -25,7 +25,11 @@ jobs:
         run: |
           set -euxo pipefail
 
-          curl -L https://raw.githubusercontent.com/moby/profiles/main/seccomp/default.json -o "$PROFILE_PATH"
+          git clone --depth 1 --single-branch https://github.com/moby/profiles.git moby-profiles
+
+          COMMIT_HASH=$(git -C moby-profiles rev-parse HEAD)
+
+          cp moby-profiles/seccomp/default.json "$PROFILE_PATH"
 
           sed -i 's/SCMP_ACT_ALLOW/SCMP_ACT_LOG/g' "$PROFILE_PATH"
 
@@ -37,5 +41,5 @@ jobs:
           if git commit -m "Update $PROFILE_PATH"; then
             git push origin "$BRANCH_NAME"
 
-            gh pr create --fill --base main --head "$BRANCH_NAME"
+            gh pr create --title "Update Docker Default Logged Profile" --body "Automated PR that updates $PROFILE_PATH to be based off of https://github.com/moby/profiles/blob/$COMMIT_HASH/seccomp/default.json" --base main --head "$BRANCH_NAME"
           fi
