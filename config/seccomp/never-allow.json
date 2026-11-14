@@ -1,0 +1,78 @@
+[
+  {
+    "names": [
+      "ioctl",
+      "process_vm_readv",
+      "process_vm_writev",
+      "ptrace"
+    ],
+    "comment": "massive attack surface"
+  },
+  {
+    "names": [
+      "s390_pci_mmio_read",
+      "s390_pci_mmio_write",
+      "s390_runtime_instr",
+      "socketcall",
+      "swapcontext"
+    ],
+    "comment": "archaic"
+  },
+  {
+    "names": [
+      "clone3",
+      "openat2"
+    ],
+    "comment": "unfilterable"
+  },
+  {
+    "names": [
+      "acct",
+      "bpf",
+      "chroot",
+      "clock_settime",
+      "clock_settime64",
+      "delete_module",
+      "fanotify_init",
+      "finit_module",
+      "fsconfig",
+      "fsmount",
+      "fsopen",
+      "fspick",
+      "get_mempolicy",
+      "init_module",
+      "ioperm",
+      "iopl",
+      "kcmp",
+      "lookup_dcookie",
+      "lsm_get_self_attr",
+      "lsm_list_modules",
+      "lsm_set_self_attr",
+      "mbind",
+      "mount",
+      "mount_setattr",
+      "move_mount",
+      "open_by_handle_at",
+      "open_tree",
+      "perf_event_open",
+      "pidfd_getfd",
+      "process_madvise",
+      "quotactl",
+      "quotactl_fd",
+      "reboot",
+      "set_mempolicy",
+      "set_mempolicy_home_node",
+      "setdomainname",
+      "sethostname",
+      "setns",
+      "settimeofday",
+      "stime",
+      "syslog",
+      "umount",
+      "umount2",
+      "unshare",
+      "vhangup"
+    ],
+    "comment": "requires capabilities"
+  }
+]

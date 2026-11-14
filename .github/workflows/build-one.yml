@@ -28,6 +28,7 @@ jobs:
             build:
               - '.github/workflows/build-one.yml'
               - 'config/seccomp/**'
+              - '!config/seccomp/never-allow.json'
               - 'contexts/${{ inputs.image_name }}/**'
               - 'scripts/seccomp/**'
               - 'tests/environments/${{ inputs.image_name }}/**'
